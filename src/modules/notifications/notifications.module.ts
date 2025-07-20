@@ -3,6 +3,7 @@ import { BullModule } from '@nestjs/bull';
 import { CacheModule } from '@nestjs/cache-manager';
 import { NotificationsService } from './notifications.service';
 import { NotificationsController } from './notifications.controller';
+import { NotificationsProcessor } from './notifications.processor';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { redisConfig } from '../../config/redis.config';
 
@@ -18,7 +19,7 @@ import { redisConfig } from '../../config/redis.config';
     }),
   ],
   controllers: [NotificationsController],
-  providers: [NotificationsService],
+  providers: [NotificationsService, NotificationsProcessor],
   exports: [NotificationsService],
 })
 export class NotificationsModule {} 
