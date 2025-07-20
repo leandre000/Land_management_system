@@ -1,22 +1,52 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject, forwardRef } from '@nestjs/common';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import { Inject } from '@nestjs/common';
 import { Cache } from 'cache-manager';
 import { WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
 import { Server } from 'socket.io';
 import { RabbitMQService, RabbitMQEvents } from '../rabbitmq/rabbitmq.service';
 
+interface ExtendedCache extends Cache {
+  store: {
+    keys: (pattern: string) => Promise<string[]>;
+  };
+}
+
+export interface Notification {
+  id: string;
+  userId: string;
+  type: NotificationType;
+  data: any;
+  timestamp: Date;
+  read: boolean;
+}
+
 export enum NotificationType {
-  LAND_REGISTERED = 'land_registered',
-  LAND_VERIFIED = 'land_verified',
-  TRANSFER_INITIATED = 'transfer_initiated',
-  TRANSFER_APPROVED = 'transfer_approved',
-  TAX_ASSESSED = 'tax_assessed',
-  TAX_PAID = 'tax_paid',
-  DISPUTE_FILED = 'dispute_filed',
-  DISPUTE_RESOLVED = 'dispute_resolved',
-  PERMIT_APPLIED = 'permit_applied',
-  PERMIT_APPROVED = 'permit_approved',
+  // Land Registration
+  LAND_REGISTERED = 'LAND_REGISTERED',
+  LAND_VERIFIED = 'LAND_VERIFIED',
+  LAND_UPDATED = 'LAND_UPDATED',
+
+  // Land Transfer
+  TRANSFER_INITIATED = 'TRANSFER_INITIATED',
+  TRANSFER_PENDING_APPROVAL = 'TRANSFER_PENDING_APPROVAL',
+  TRANSFER_APPROVED = 'TRANSFER_APPROVED',
+  TRANSFER_COMPLETED = 'TRANSFER_COMPLETED',
+  TRANSFER_REJECTED = 'TRANSFER_REJECTED',
+
+  // Construction Permits
+  PERMIT_APPLIED = 'PERMIT_APPLIED',
+  PERMIT_APPROVED = 'PERMIT_APPROVED',
+  PERMIT_REJECTED = 'PERMIT_REJECTED',
+
+  // Land Disputes
+  DISPUTE_FILED = 'DISPUTE_FILED',
+  DISPUTE_RESOLVED = 'DISPUTE_RESOLVED',
+  DISPUTE_UPDATED = 'DISPUTE_UPDATED',
+
+  // Tax Related
+  TAX_ASSESSED = 'TAX_ASSESSED',
+  TAX_PAID = 'TAX_PAID',
+  TAX_OVERDUE = 'TAX_OVERDUE',
 }
 
 @Injectable()
@@ -30,7 +60,8 @@ export class NotificationsService {
   server: Server;
 
   constructor(
-    @Inject(CACHE_MANAGER) private cacheManager: Cache,
+    @Inject(CACHE_MANAGER) private cacheManager: ExtendedCache,
+    @Inject(forwardRef(() => RabbitMQService))
     private readonly rabbitMQService: RabbitMQService,
   ) {}
 
@@ -38,8 +69,8 @@ export class NotificationsService {
     userId: string,
     type: NotificationType,
     data: any,
-  ) {
-    const notification = {
+  ): Promise<Notification> {
+    const notification: Notification = {
       id: Date.now().toString(),
       userId,
       type,
@@ -52,7 +83,7 @@ export class NotificationsService {
     await this.cacheManager.set(
       `notification:${userId}:${notification.id}`,
       notification,
-      { ttl: 60 * 60 * 24 * 7 } // 7 days
+      604800 // 7 days
     );
 
     // Send real-time notification via WebSocket
@@ -67,28 +98,28 @@ export class NotificationsService {
     return notification;
   }
 
-  async getUserNotifications(userId: string): Promise<any[]> {
+  async getUserNotifications(userId: string): Promise<Notification[]> {
     const keys = await this.cacheManager.store.keys(`notification:${userId}:*`);
     const notifications = await Promise.all(
       keys.map(key => this.cacheManager.get(key))
     );
     return notifications
-      .filter(n => n !== null)
-      .sort((a, b) => b.timestamp - a.timestamp);
+      .filter((n): n is Notification => n !== null)
+      .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
   }
 
-  async getUnreadNotifications(userId: string): Promise<any[]> {
+  async getUnreadNotifications(userId: string): Promise<Notification[]> {
     const notifications = await this.getUserNotifications(userId);
     return notifications.filter(n => !n.read);
   }
 
   async markAsRead(userId: string, notificationId: string): Promise<void> {
     const key = `notification:${userId}:${notificationId}`;
-    const notification = await this.cacheManager.get(key);
+    const notification = await this.cacheManager.get<Notification>(key);
     
     if (notification) {
       notification.read = true;
-      await this.cacheManager.set(key, notification);
+      await this.cacheManager.set(key, notification, 604800); // 7 days
     }
   }
 
@@ -99,7 +130,8 @@ export class NotificationsService {
         notification.read = true;
         await this.cacheManager.set(
           `notification:${userId}:${notification.id}`,
-          notification
+          notification,
+          604800 // 7 days
         );
       })
     );
