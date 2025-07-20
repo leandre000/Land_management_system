@@ -1,107 +1,94 @@
-import { Controller, Get, Post, Body, Patch, Param, UseGuards, Request } from '@nestjs/common';
-import { ApiBearerAuth, ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Request } from '@nestjs/common';
 import { UrbanizationService } from './urbanization.service';
 import { CreatePermitDto } from './dto/create-permit.dto';
-import { ReviewPermitDto } from './dto/review-permit.dto';
+import { UpdatePermitDto } from './dto/update-permit.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { RolesGuard } from '../auth/guards/roles.guard';
-import { Roles } from '../auth/decorators/roles.decorator';
-import { UserRole } from '../../common/enums/user-role.enum';
-import { ConstructionPermit } from './entities/construction-permit.entity';
+import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { PermitStatus } from './entities/construction-permit.entity';
 
-@ApiTags('urbanization')
+@ApiTags('Urbanization')
 @Controller('urbanization')
-@UseGuards(JwtAuthGuard, RolesGuard)
-@ApiBearerAuth()
+@UseGuards(JwtAuthGuard)
 export class UrbanizationController {
   constructor(private readonly urbanizationService: UrbanizationService) {}
 
-  @Post('permits')
-  @Roles(UserRole.CITIZEN)
-  @ApiOperation({ summary: 'Apply for a construction permit' })
-  @ApiResponse({ status: 201, description: 'Permit application submitted successfully', type: ConstructionPermit })
-  create(@Body() createPermitDto: CreatePermitDto, @Request() req) {
-    return this.urbanizationService.create(createPermitDto, req.user);
+  @Post()
+  @ApiOperation({ summary: 'Create a new construction permit' })
+  async create(@Body() createPermitDto: CreatePermitDto) {
+    return this.urbanizationService.create({
+      ...createPermitDto,
+    });
   }
 
-  @Get('permits')
-  @Roles(UserRole.ADMIN, UserRole.CONSTRUCTION_OFFICER)
+  @Get()
   @ApiOperation({ summary: 'Get all construction permits' })
-  @ApiResponse({ status: 200, description: 'Return all permits', type: [ConstructionPermit] })
   findAll() {
     return this.urbanizationService.findAll();
   }
 
-  @Get('permits/pending')
-  @Roles(UserRole.ADMIN, UserRole.CONSTRUCTION_OFFICER)
-  @ApiOperation({ summary: 'Get all pending permits' })
-  @ApiResponse({ status: 200, description: 'Return all pending permits', type: [ConstructionPermit] })
+  @Get('pending')
+  @ApiOperation({ summary: 'Get pending permits' })
   getPendingPermits() {
-    return this.urbanizationService.getPendingPermits();
+    return this.urbanizationService.findByStatus(PermitStatus.PENDING);
   }
 
-  @Get('permits/approved')
-  @Roles(UserRole.ADMIN, UserRole.CONSTRUCTION_OFFICER)
-  @ApiOperation({ summary: 'Get all approved permits' })
-  @ApiResponse({ status: 200, description: 'Return all approved permits', type: [ConstructionPermit] })
+  @Get('approved')
+  @ApiOperation({ summary: 'Get approved permits' })
   getApprovedPermits() {
-    return this.urbanizationService.getApprovedPermits();
+    return this.urbanizationService.findByStatus(PermitStatus.APPROVED);
   }
 
-  @Get('permits/my-permits')
-  @Roles(UserRole.CITIZEN)
-  @ApiOperation({ summary: 'Get user\'s permits' })
-  @ApiResponse({ status: 200, description: 'Return user\'s permits', type: [ConstructionPermit] })
-  findMyPermits(@Request() req) {
-    return this.urbanizationService.findByUser(req.user.id);
+  @Get('applicant')
+  @ApiOperation({ summary: 'Get permits by applicant' })
+  findByApplicant(@Request() req) {
+    return this.urbanizationService.findByApplicant(req.user.id);
   }
 
-  @Get('permits/:id')
-  @ApiOperation({ summary: 'Get permit by id' })
-  @ApiResponse({ status: 200, description: 'Return the permit', type: ConstructionPermit })
+  @Get(':id')
+  @ApiOperation({ summary: 'Get a construction permit by ID' })
   findOne(@Param('id') id: string) {
     return this.urbanizationService.findOne(id);
   }
 
-  @Patch('permits/:id/review')
-  @Roles(UserRole.CONSTRUCTION_OFFICER)
-  @ApiOperation({ summary: 'Review permit application' })
-  @ApiResponse({ status: 200, description: 'Permit reviewed successfully', type: ConstructionPermit })
-  review(
-    @Param('id') id: string,
-    @Body() reviewPermitDto: ReviewPermitDto,
-    @Request() req,
-  ) {
-    return this.urbanizationService.review(id, reviewPermitDto, req.user);
+  @Patch(':id')
+  @ApiOperation({ summary: 'Update a construction permit' })
+  update(@Param('id') id: string, @Body() updatePermitDto: UpdatePermitDto) {
+    return this.urbanizationService.update(id, updatePermitDto);
   }
 
-  @Post('permits/:id/payment')
-  @Roles(UserRole.CITIZEN)
-  @ApiOperation({ summary: 'Record permit fee payment' })
-  @ApiResponse({ status: 200, description: 'Payment recorded successfully', type: ConstructionPermit })
-  recordPayment(@Param('id') id: string) {
-    return this.urbanizationService.recordPayment(id);
+  @Delete(':id')
+  @ApiOperation({ summary: 'Delete a construction permit' })
+  remove(@Param('id') id: string) {
+    return this.urbanizationService.remove(id);
   }
 
-  @Post('permits/:id/inspection')
-  @Roles(UserRole.CONSTRUCTION_OFFICER)
-  @ApiOperation({ summary: 'Schedule permit inspection' })
-  @ApiResponse({ status: 200, description: 'Inspection scheduled successfully', type: ConstructionPermit })
-  scheduleInspection(
-    @Param('id') id: string,
-    @Body('date') date: Date,
-  ) {
-    return this.urbanizationService.scheduleInspection(id, date);
+  @Post(':id/approve')
+  @ApiOperation({ summary: 'Approve a construction permit' })
+  approve(@Param('id') id: string) {
+    return this.urbanizationService.approve(id);
   }
 
-  @Post('permits/:id/inspection-report')
-  @Roles(UserRole.CONSTRUCTION_OFFICER)
-  @ApiOperation({ summary: 'Submit inspection report' })
-  @ApiResponse({ status: 200, description: 'Inspection report submitted successfully', type: ConstructionPermit })
-  submitInspectionReport(
+  @Post(':id/reject')
+  @ApiOperation({ summary: 'Reject a construction permit' })
+  reject(@Param('id') id: string, @Body('reason') reason: string) {
+    return this.urbanizationService.reject(id, reason);
+  }
+
+  @Post(':id/inspection')
+  @ApiOperation({ summary: 'Record inspection report' })
+  recordInspection(
     @Param('id') id: string,
     @Body('report') report: string,
   ) {
-    return this.urbanizationService.submitInspectionReport(id, report);
+    return this.urbanizationService.recordInspection(id, report);
+  }
+
+  @Post(':id/fees')
+  @ApiOperation({ summary: 'Update fee payment status' })
+  updateFeeStatus(
+    @Param('id') id: string,
+    @Body('paid') paid: boolean,
+  ) {
+    return this.urbanizationService.updateFeeStatus(id, paid);
   }
 } 

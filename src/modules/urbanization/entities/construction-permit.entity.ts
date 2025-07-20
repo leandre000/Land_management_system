@@ -1,11 +1,9 @@
-import { Entity, Column, ManyToOne } from 'typeorm';
-import { BaseEntity } from '../../../common/entities/base.entity';
+import { Entity, Column, ManyToOne, CreateDateColumn, UpdateDateColumn, PrimaryGeneratedColumn } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
 import { Land } from '../../land-registration/entities/land.entity';
 
 export enum PermitStatus {
   PENDING = 'pending',
-  IN_REVIEW = 'in_review',
   APPROVED = 'approved',
   REJECTED = 'rejected',
   EXPIRED = 'expired',
@@ -19,8 +17,11 @@ export enum ConstructionType {
   OTHER = 'other',
 }
 
-@Entity('construction_permits')
-export class ConstructionPermit extends BaseEntity {
+@Entity()
+export class ConstructionPermit {
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
   @ManyToOne(() => Land, { eager: true })
   land: Land;
 
@@ -39,11 +40,8 @@ export class ConstructionPermit extends BaseEntity {
   @Column('decimal', { precision: 10, scale: 2 })
   estimatedCost: number;
 
-  @Column('decimal', { precision: 10, scale: 2 })
-  totalArea: number;
-
-  @Column('int')
-  floors: number;
+  @Column('text', { array: true, default: [] })
+  documents: string[];
 
   @Column({
     type: 'enum',
@@ -52,45 +50,39 @@ export class ConstructionPermit extends BaseEntity {
   })
   status: PermitStatus;
 
-  @Column({ type: 'jsonb', nullable: true })
-  architecturalPlans: object;
-
-  @Column({ type: 'jsonb', nullable: true })
-  structuralPlans: object;
-
-  @Column({ type: 'date' })
-  proposedStartDate: Date;
-
-  @Column({ type: 'date' })
-  proposedEndDate: Date;
-
-  @Column({ type: 'date', nullable: true })
+  @Column({ type: 'timestamp', nullable: true })
   approvalDate: Date;
 
-  @Column({ type: 'date', nullable: true })
-  expiryDate: Date;
+  @Column({ type: 'timestamp', nullable: true })
+  rejectedAt: Date;
 
-  @ManyToOne(() => User, { nullable: true, eager: true })
-  reviewedBy: User;
+  @Column('text', { nullable: true })
+  rejectionReason: string;
 
-  @Column({ type: 'text', nullable: true })
-  reviewComments: string;
-
-  @Column({ type: 'text', array: true, default: [] })
-  conditions: string[];
-
-  @Column({ type: 'boolean', default: false })
-  requiresInspection: boolean;
-
-  @Column({ type: 'timestamp with time zone', nullable: true })
-  inspectionDate: Date;
-
-  @Column({ type: 'text', nullable: true })
-  inspectionReport: string;
-
-  @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
+  @Column('decimal', { precision: 10, scale: 2, default: 0 })
   permitFee: number;
 
-  @Column({ type: 'boolean', default: false })
+  @Column({ default: false })
   feesPaid: boolean;
+
+  @Column({ default: false })
+  requiresInspection: boolean;
+
+  @Column({ type: 'timestamp', nullable: true })
+  inspectionDate: Date;
+
+  @Column('text', { nullable: true })
+  inspectionReport: string;
+
+  @Column('text', { array: true, default: [] })
+  conditions: string[];
+
+  @Column({ type: 'timestamp', nullable: true })
+  expiryDate: Date;
+
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @UpdateDateColumn()
+  updatedAt: Date;
 } 
