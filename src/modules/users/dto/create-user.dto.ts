@@ -1,41 +1,36 @@
-import { IsEmail, IsEnum, IsNotEmpty, IsOptional, IsString, MinLength } from 'class-validator';
+import { IsString, IsEmail, IsEnum, IsOptional } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { UserRole } from '../../../common/enums/user-role.enum';
+import { UserRole } from '../entities/user.entity';
 
 export class CreateUserDto {
-  @ApiProperty({ description: 'User\'s first name' })
-  @IsNotEmpty()
+  @ApiProperty({ description: 'First name of the user' })
   @IsString()
   firstName: string;
 
-  @ApiProperty({ description: 'User\'s last name' })
-  @IsNotEmpty()
+  @ApiProperty({ description: 'Last name of the user' })
   @IsString()
   lastName: string;
 
-  @ApiProperty({ description: 'User\'s email address' })
-  @IsNotEmpty()
+  @ApiProperty({ description: 'Email address of the user' })
   @IsEmail()
   email: string;
 
-  @ApiProperty({ description: 'User\'s password' })
-  @IsNotEmpty()
+  @ApiProperty({ description: 'Password for the user account' })
   @IsString()
-  @MinLength(8)
   password: string;
 
-  @ApiPropertyOptional({ enum: UserRole, description: 'User\'s role' })
-  @IsOptional()
-  @IsEnum(UserRole)
-  role?: UserRole;
-
-  @ApiPropertyOptional({ description: 'User\'s phone number' })
-  @IsOptional()
+  @ApiPropertyOptional({ description: 'Phone number of the user' })
   @IsString()
+  @IsOptional()
   phoneNumber?: string;
 
-  @ApiPropertyOptional({ description: 'User\'s national ID' })
-  @IsOptional()
+  @ApiPropertyOptional({ description: 'Address of the user' })
   @IsString()
-  nationalId?: string;
+  @IsOptional()
+  address?: string;
+
+  @ApiPropertyOptional({ description: 'Role of the user', enum: UserRole, default: UserRole.CITIZEN })
+  @IsEnum(UserRole)
+  @IsOptional()
+  role?: UserRole;
 } 

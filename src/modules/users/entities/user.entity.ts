@@ -1,11 +1,18 @@
-import { Entity, Column, BeforeInsert, BeforeUpdate } from 'typeorm';
-import { BaseEntity } from '../../../common/entities/base.entity';
-import { UserRole } from '../../../common/enums/user-role.enum';
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, BeforeInsert, BeforeUpdate } from 'typeorm';
 import { Exclude } from 'class-transformer';
 import * as bcrypt from 'bcrypt';
 
+export enum UserRole {
+  ADMIN = 'ADMIN',
+  LAND_OFFICER = 'LAND_OFFICER',
+  CITIZEN = 'CITIZEN',
+}
+
 @Entity('users')
-export class User extends BaseEntity {
+export class User {
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
   @Column()
   firstName: string;
 
@@ -19,6 +26,12 @@ export class User extends BaseEntity {
   @Exclude()
   password: string;
 
+  @Column({ nullable: true })
+  phoneNumber?: string;
+
+  @Column({ nullable: true })
+  address?: string;
+
   @Column({
     type: 'enum',
     enum: UserRole,
@@ -26,14 +39,15 @@ export class User extends BaseEntity {
   })
   role: UserRole;
 
-  @Column({ nullable: true })
-  phoneNumber: string;
+  @CreateDateColumn()
+  createdAt: Date;
 
-  @Column({ nullable: true })
-  nationalId: string;
+  @UpdateDateColumn()
+  updatedAt: Date;
 
-  @Column({ default: false })
-  isActive: boolean;
+  get fullName(): string {
+    return `${this.firstName} ${this.lastName}`;
+  }
 
   @BeforeInsert()
   @BeforeUpdate()
