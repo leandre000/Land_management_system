@@ -2,9 +2,25 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { Transport } from '@nestjs/microservices';
+import { ConfigService } from '@nestjs/config';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  const configService = app.get(ConfigService);
+
+  // Connect to RabbitMQ
+  app.connectMicroservice({
+    transport: Transport.RMQ,
+    options: {
+      urls: [configService.get<string>('rabbitmq.url')],
+      queue: 'land_management_queue',
+      queueOptions: {
+        durable: true,
+      },
+    },
+  });
 
   // Enable CORS
   app.enableCors();
@@ -27,8 +43,11 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);
 
+  // Start microservices
+  await app.startAllMicroservices();
+
   // Start the application
-  const port = process.env.PORT || 3000;
+  const port = configService.get('port') || 3000;
   await app.listen(port);
   console.log(`Application is running on: http://localhost:${port}`);
   console.log(`Swagger documentation is available at: http://localhost:${port}/api`);

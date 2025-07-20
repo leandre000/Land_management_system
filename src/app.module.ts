@@ -10,7 +10,7 @@ import { LandTransferModule } from './modules/land-transfer/land-transfer.module
 import { LandTaxesModule } from './modules/land-taxes/land-taxes.module';
 import { ConflictResolutionModule } from './modules/conflict-resolution/conflict-resolution.module';
 import { UrbanizationModule } from './modules/urbanization/urbanization.module';
-import { SettingsModule } from './modules/settings/settings.module';
+import { NotificationsModule } from './modules/notifications/notifications.module';
 
 @Module({
   imports: [
@@ -37,6 +37,7 @@ import { SettingsModule } from './modules/settings/settings.module';
       inject: [ConfigService],
     }),
 
+
     // Scheduling
     ScheduleModule.forRoot(),
 
@@ -48,7 +49,7 @@ import { SettingsModule } from './modules/settings/settings.module';
     LandTaxesModule,
     ConflictResolutionModule,
     UrbanizationModule,
-    SettingsModule,
+    NotificationsModule,
   ],
 })
 export class AppModule {}
