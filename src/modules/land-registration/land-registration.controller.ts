@@ -1,82 +1,65 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Request } from '@nestjs/common';
-import { ApiBearerAuth, ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { Controller, Get, Post, Body, Param, Delete, Put, UseGuards, Req } from '@nestjs/common';
 import { LandRegistrationService } from './land-registration.service';
 import { CreateLandDto } from './dto/create-land.dto';
 import { UpdateLandDto } from './dto/update-land.dto';
-import { VerifyLandDto } from './dto/verify-land.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { RolesGuard } from '../auth/guards/roles.guard';
-import { Roles } from '../auth/decorators/roles.decorator';
-import { UserRole } from '../../common/enums/user-role.enum';
-import { Land } from './entities/land.entity';
+import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 
 @ApiTags('land-registration')
 @Controller('land-registration')
-@UseGuards(JwtAuthGuard, RolesGuard)
-@ApiBearerAuth()
+@UseGuards(JwtAuthGuard)
 export class LandRegistrationController {
   constructor(private readonly landRegistrationService: LandRegistrationService) {}
 
   @Post()
-  @Roles(UserRole.CITIZEN)
-  @ApiOperation({ summary: 'Register new land' })
-  @ApiResponse({ status: 201, description: 'Land registered successfully', type: Land })
-  create(@Body() createLandDto: CreateLandDto, @Request() req) {
-    return this.landRegistrationService.create(createLandDto, req.user);
+  @ApiOperation({ summary: 'Register a new land' })
+  @ApiResponse({ status: 201, description: 'The land has been successfully registered.' })
+  create(@Body() createLandDto: CreateLandDto, @Req() req: any) {
+    return this.landRegistrationService.create({
+      ...createLandDto,
+      ownerId: req.user.id,
+    });
   }
 
   @Get()
-  @Roles(UserRole.ADMIN, UserRole.LAND_OFFICER)
-  @ApiOperation({ summary: 'Get all lands' })
-  @ApiResponse({ status: 200, description: 'Return all lands', type: [Land] })
+  @ApiOperation({ summary: 'Get all registered lands' })
+  @ApiResponse({ status: 200, description: 'Return all registered lands.' })
   findAll() {
     return this.landRegistrationService.findAll();
   }
 
   @Get('my-lands')
-  @Roles(UserRole.CITIZEN)
-  @ApiOperation({ summary: 'Get user\'s lands' })
-  @ApiResponse({ status: 200, description: 'Return user\'s lands', type: [Land] })
-  findMyLands(@Request() req) {
+  @ApiOperation({ summary: 'Get all lands owned by the current user' })
+  @ApiResponse({ status: 200, description: 'Return all lands owned by the current user.' })
+  findMyLands(@Req() req: any) {
     return this.landRegistrationService.findByOwner(req.user.id);
   }
 
   @Get(':id')
-  @ApiOperation({ summary: 'Get land by id' })
-  @ApiResponse({ status: 200, description: 'Return the land', type: Land })
+  @ApiOperation({ summary: 'Get a specific land' })
+  @ApiResponse({ status: 200, description: 'Return the land.' })
   findOne(@Param('id') id: string) {
     return this.landRegistrationService.findOne(id);
   }
 
-  @Patch(':id')
-  @Roles(UserRole.CITIZEN)
-  @ApiOperation({ summary: 'Update land' })
-  @ApiResponse({ status: 200, description: 'Land updated successfully', type: Land })
-  update(
-    @Param('id') id: string,
-    @Body() updateLandDto: UpdateLandDto,
-    @Request() req,
-  ) {
-    return this.landRegistrationService.update(id, updateLandDto, req.user);
-  }
-
-  @Patch(':id/verify')
-  @Roles(UserRole.LAND_OFFICER)
-  @ApiOperation({ summary: 'Verify land' })
-  @ApiResponse({ status: 200, description: 'Land verified successfully', type: Land })
-  verify(
-    @Param('id') id: string,
-    @Body() verifyLandDto: VerifyLandDto,
-    @Request() req,
-  ) {
-    return this.landRegistrationService.verify(id, verifyLandDto, req.user);
+  @Put(':id')
+  @ApiOperation({ summary: 'Update a land' })
+  @ApiResponse({ status: 200, description: 'The land has been successfully updated.' })
+  update(@Param('id') id: string, @Body() updateLandDto: UpdateLandDto) {
+    return this.landRegistrationService.update(id, updateLandDto);
   }
 
   @Delete(':id')
-  @Roles(UserRole.CITIZEN)
-  @ApiOperation({ summary: 'Delete land' })
-  @ApiResponse({ status: 200, description: 'Land deleted successfully' })
-  remove(@Param('id') id: string, @Request() req) {
-    return this.landRegistrationService.remove(id, req.user);
+  @ApiOperation({ summary: 'Delete a land' })
+  @ApiResponse({ status: 200, description: 'The land has been successfully deleted.' })
+  remove(@Param('id') id: string) {
+    return this.landRegistrationService.remove(id);
+  }
+
+  @Post(':id/verify')
+  @ApiOperation({ summary: 'Verify a land' })
+  @ApiResponse({ status: 200, description: 'The land has been successfully verified.' })
+  verify(@Param('id') id: string, @Req() req: any) {
+    return this.landRegistrationService.verify(id, req.user.id);
   }
 } 

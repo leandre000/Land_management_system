@@ -1,59 +1,68 @@
-import { Entity, Column, ManyToOne } from 'typeorm';
-import { BaseEntity } from '../../../common/entities/base.entity';
+import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, CreateDateColumn, UpdateDateColumn } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
-import { LandStatus } from '../../../common/enums/land-status.enum';
+
+export enum LandStatus {
+  REGISTERED = 'REGISTERED',
+  PENDING_TRANSFER = 'PENDING_TRANSFER',
+  UNDER_DISPUTE = 'UNDER_DISPUTE',
+  PENDING_CONSTRUCTION = 'PENDING_CONSTRUCTION',
+}
 
 @Entity('lands')
-export class Land extends BaseEntity {
-  @Column()
-  title: string;
+export class Land {
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
 
   @Column()
   plotNumber: string;
+
+  @Column('jsonb')
+  location: {
+    latitude: number;
+    longitude: number;
+    address: string;
+  };
 
   @Column('decimal', { precision: 10, scale: 2 })
   area: number;
 
   @Column()
-  location: string;
+  title: string;
 
-  @Column('jsonb')
-  coordinates: {
-    latitude: number;
-    longitude: number;
-  };
+  @Column('simple-array', { nullable: true })
+  boundaries?: string[];
 
-  @Column('text', { array: true, nullable: true })
-  boundaries: string[];
+  @Column({ nullable: true })
+  description?: string;
+
+  @Column('jsonb', { nullable: true })
+  documents?: object;
+
+  @Column('decimal', { precision: 10, scale: 2, nullable: true })
+  value?: number;
 
   @Column({
     type: 'enum',
     enum: LandStatus,
-    default: LandStatus.PENDING_REGISTRATION
+    default: LandStatus.REGISTERED,
   })
   status: LandStatus;
-
-  @Column({ type: 'text', nullable: true })
-  description: string;
-
-  @Column({ type: 'jsonb', nullable: true })
-  documents: object;
 
   @ManyToOne(() => User, { eager: true })
   owner: User;
 
-  @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })
-  value: number;
+  @ManyToOne(() => User, { nullable: true, eager: true })
+  verifiedBy?: User;
 
-  @Column({ type: 'timestamp with time zone', nullable: true })
-  lastValuationDate: Date;
+  @Column({ type: 'timestamp', nullable: true })
+  verificationDate?: Date;
 
   @Column({ default: false })
   isVerified: boolean;
 
-  @ManyToOne(() => User, { nullable: true, eager: true })
-  verifiedBy: User;
+  @CreateDateColumn()
+  createdAt: Date;
 
-  @Column({ type: 'timestamp with time zone', nullable: true })
-  verificationDate: Date;
+  @UpdateDateColumn()
+  updatedAt: Date;
 } 

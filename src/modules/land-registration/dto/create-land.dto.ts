@@ -1,48 +1,48 @@
+import { IsString, IsNumber, IsUUID, IsObject, IsOptional, IsArray } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsNotEmpty, IsString, IsNumber, IsOptional, IsArray, IsObject } from 'class-validator';
 
 export class CreateLandDto {
-  @ApiProperty({ description: 'Title of the land' })
-  @IsString()
-  @IsNotEmpty()
-  title: string;
+  @ApiProperty({ description: 'ID of the land owner' })
+  @IsUUID()
+  ownerId: string;
 
   @ApiProperty({ description: 'Plot number of the land' })
   @IsString()
-  @IsNotEmpty()
   plotNumber: string;
 
-  @ApiProperty({ description: 'Area of the land in square meters' })
+  @ApiProperty({ description: 'Location details' })
+  @IsObject()
+  location: {
+    latitude: number;
+    longitude: number;
+    address: string;
+  };
+
+  @ApiProperty({ description: 'Area in square meters' })
   @IsNumber()
-  @IsNotEmpty()
   area: number;
 
-  @ApiProperty({ description: 'Location of the land' })
+  @ApiProperty({ description: 'Title of the land' })
   @IsString()
-  @IsNotEmpty()
-  location: string;
+  title: string;
 
-  @ApiProperty({ description: 'Coordinates of the land (GeoJSON Point)' })
-  @IsObject()
-  @IsNotEmpty()
-  coordinates: object;
-
-  @ApiPropertyOptional({ description: 'Boundaries of the land', type: [String] })
+  @ApiPropertyOptional({ description: 'Land boundaries' })
   @IsArray()
+  @IsString({ each: true })
   @IsOptional()
   boundaries?: string[];
 
-  @ApiPropertyOptional({ description: 'Description of the land' })
+  @ApiPropertyOptional({ description: 'Land description' })
   @IsString()
   @IsOptional()
   description?: string;
 
-  @ApiPropertyOptional({ description: 'Documents related to the land' })
+  @ApiPropertyOptional({ description: 'Supporting documents' })
   @IsObject()
   @IsOptional()
   documents?: object;
 
-  @ApiPropertyOptional({ description: 'Value of the land' })
+  @ApiPropertyOptional({ description: 'Land value' })
   @IsNumber()
   @IsOptional()
   value?: number;
