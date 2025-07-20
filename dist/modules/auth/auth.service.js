@@ -21,22 +21,20 @@ let AuthService = class AuthService {
         this.jwtService = jwtService;
     }
     async validateUser(email, password) {
-        try {
-            const user = await this.usersService.findByEmail(email);
-            if (await user.validatePassword(password)) {
-                return user;
-            }
+        const user = await this.usersService.findByEmail(email);
+        if (!user) {
             throw new common_1.UnauthorizedException('Invalid credentials');
         }
-        catch (error) {
+        const isValid = await user.validatePassword(password);
+        if (!isValid) {
             throw new common_1.UnauthorizedException('Invalid credentials');
         }
+        return user;
     }
-    async login(loginDto) {
-        const user = await this.validateUser(loginDto.email, loginDto.password);
+    async login(user) {
         const payload = {
-            email: user.email,
             sub: user.id,
+            email: user.email,
             role: user.role,
         };
         return {

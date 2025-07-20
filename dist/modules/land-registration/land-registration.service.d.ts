@@ -1,17 +1,20 @@
 import { Repository } from 'typeorm';
-import { Land } from './entities/land.entity';
+import { Land, LandStatus } from './entities/land.entity';
 import { CreateLandDto } from './dto/create-land.dto';
 import { UpdateLandDto } from './dto/update-land.dto';
-import { VerifyLandDto } from './dto/verify-land.dto';
-import { User } from '../users/entities/user.entity';
+import { RabbitMQService } from '../rabbitmq/rabbitmq.service';
+import { UsersService } from '../users/users.service';
 export declare class LandRegistrationService {
     private readonly landRepository;
-    constructor(landRepository: Repository<Land>);
-    create(createLandDto: CreateLandDto, owner: User): Promise<Land>;
+    private readonly rabbitMQService;
+    private readonly usersService;
+    constructor(landRepository: Repository<Land>, rabbitMQService: RabbitMQService, usersService: UsersService);
+    create(createLandDto: CreateLandDto): Promise<Land>;
     findAll(): Promise<Land[]>;
     findOne(id: string): Promise<Land>;
+    update(id: string, updateLandDto: UpdateLandDto): Promise<Land>;
+    remove(id: string): Promise<void>;
+    verify(id: string, verifiedBy: string): Promise<Land>;
     findByOwner(ownerId: string): Promise<Land[]>;
-    update(id: string, updateLandDto: UpdateLandDto, user: User): Promise<Land>;
-    verify(id: string, verifyLandDto: VerifyLandDto, verifier: User): Promise<Land>;
-    remove(id: string, user: User): Promise<void>;
+    findByStatus(status: LandStatus): Promise<Land[]>;
 }

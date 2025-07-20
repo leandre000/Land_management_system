@@ -14,6 +14,7 @@ const conflict_resolution_controller_1 = require("./conflict-resolution.controll
 const land_dispute_entity_1 = require("./entities/land-dispute.entity");
 const land_registration_module_1 = require("../land-registration/land-registration.module");
 const users_module_1 = require("../users/users.module");
+const notifications_module_1 = require("../notifications/notifications.module");
 let ConflictResolutionModule = class ConflictResolutionModule {
 };
 exports.ConflictResolutionModule = ConflictResolutionModule;
@@ -23,6 +24,7 @@ exports.ConflictResolutionModule = ConflictResolutionModule = __decorate([
             typeorm_1.TypeOrmModule.forFeature([land_dispute_entity_1.LandDispute]),
             land_registration_module_1.LandRegistrationModule,
             users_module_1.UsersModule,
+            notifications_module_1.NotificationsModule
         ],
         controllers: [conflict_resolution_controller_1.ConflictResolutionController],
         providers: [conflict_resolution_service_1.ConflictResolutionService],

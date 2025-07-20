@@ -23,13 +23,11 @@ let UsersService = class UsersService {
         this.usersRepository = usersRepository;
     }
     async create(createUserDto) {
-        const existingUser = await this.usersRepository.findOne({
-            where: { email: createUserDto.email },
+        const user = new user_entity_1.User();
+        Object.assign(user, {
+            ...createUserDto,
+            role: createUserDto.role || user_entity_1.UserRole.CITIZEN,
         });
-        if (existingUser) {
-            throw new common_1.ConflictException('Email already exists');
-        }
-        const user = this.usersRepository.create(createUserDto);
         return this.usersRepository.save(user);
     }
     async findAll() {
@@ -38,35 +36,22 @@ let UsersService = class UsersService {
     async findOne(id) {
         const user = await this.usersRepository.findOne({ where: { id } });
         if (!user) {
-            throw new common_1.NotFoundException(`User with ID "${id}" not found`);
+            throw new common_1.NotFoundException(`User with ID ${id} not found`);
         }
         return user;
     }
     async findByEmail(email) {
         const user = await this.usersRepository.findOne({ where: { email } });
-        if (!user) {
-            throw new common_1.NotFoundException(`User with email "${email}" not found`);
-        }
-        return user;
+        return user || undefined;
     }
     async update(id, updateUserDto) {
         const user = await this.findOne(id);
-        if (updateUserDto.email && updateUserDto.email !== user.email) {
-            const existingUser = await this.usersRepository.findOne({
-                where: { email: updateUserDto.email },
-            });
-            if (existingUser) {
-                throw new common_1.ConflictException('Email already exists');
-            }
-        }
         Object.assign(user, updateUserDto);
         return this.usersRepository.save(user);
     }
     async remove(id) {
-        const result = await this.usersRepository.delete(id);
-        if (result.affected === 0) {
-            throw new common_1.NotFoundException(`User with ID "${id}" not found`);
-        }
+        const user = await this.findOne(id);
+        await this.usersRepository.remove(user);
     }
 };
 exports.UsersService = UsersService;

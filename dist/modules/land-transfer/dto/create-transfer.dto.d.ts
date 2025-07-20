@@ -1,7 +1,8 @@
 export declare class CreateTransferDto {
     landId: string;
+    fromOwnerId: string;
     toOwnerId: string;
     transferAmount: number;
-    documents?: object;
+    documents?: string[];
     reason?: string;
 }

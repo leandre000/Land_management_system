@@ -1,14 +1,15 @@
 import { LandTransferService } from './land-transfer.service';
 import { CreateTransferDto } from './dto/create-transfer.dto';
-import { ApproveTransferDto } from './dto/approve-transfer.dto';
-import { LandTransfer } from './entities/land-transfer.entity';
+import { UpdateTransferDto } from './dto/update-transfer.dto';
 export declare class LandTransferController {
     private readonly landTransferService;
     constructor(landTransferService: LandTransferService);
-    create(createTransferDto: CreateTransferDto, req: any): Promise<LandTransfer>;
-    findAll(): Promise<LandTransfer[]>;
-    findMyTransfers(req: any): Promise<LandTransfer[]>;
-    findOne(id: string): Promise<LandTransfer>;
-    approve(id: string, approveTransferDto: ApproveTransferDto, req: any): Promise<LandTransfer>;
-    cancel(id: string, req: any): Promise<LandTransfer>;
+    create(createTransferDto: CreateTransferDto): Promise<import("./entities/land-transfer.entity").LandTransfer>;
+    findAll(): Promise<import("./entities/land-transfer.entity").LandTransfer[]>;
+    findMyTransfers(req: any): Promise<import("./entities/land-transfer.entity").LandTransfer[]>;
+    findOne(id: string): Promise<import("./entities/land-transfer.entity").LandTransfer>;
+    update(id: string, updateTransferDto: UpdateTransferDto): Promise<import("./entities/land-transfer.entity").LandTransfer>;
+    remove(id: string): Promise<void>;
+    approve(id: string): Promise<import("./entities/land-transfer.entity").LandTransfer>;
+    reject(id: string, reason: string): Promise<import("./entities/land-transfer.entity").LandTransfer>;
 }

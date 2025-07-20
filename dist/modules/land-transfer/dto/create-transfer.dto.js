@@ -10,10 +10,11 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CreateTransferDto = void 0;
-const swagger_1 = require("@nestjs/swagger");
 const class_validator_1 = require("class-validator");
+const swagger_1 = require("@nestjs/swagger");
 class CreateTransferDto {
     landId;
+    fromOwnerId;
     toOwnerId;
     transferAmount;
     documents;
@@ -23,26 +24,29 @@ exports.CreateTransferDto = CreateTransferDto;
 __decorate([
     (0, swagger_1.ApiProperty)({ description: 'ID of the land to transfer' }),
     (0, class_validator_1.IsUUID)(),
-    (0, class_validator_1.IsNotEmpty)(),
     __metadata("design:type", String)
 ], CreateTransferDto.prototype, "landId", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({ description: 'ID of the user to transfer the land to' }),
+    (0, swagger_1.ApiProperty)({ description: 'ID of the current owner' }),
     (0, class_validator_1.IsUUID)(),
-    (0, class_validator_1.IsNotEmpty)(),
+    __metadata("design:type", String)
+], CreateTransferDto.prototype, "fromOwnerId", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ description: 'ID of the new owner' }),
+    (0, class_validator_1.IsUUID)(),
     __metadata("design:type", String)
 ], CreateTransferDto.prototype, "toOwnerId", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)({ description: 'Transfer amount' }),
     (0, class_validator_1.IsNumber)(),
-    (0, class_validator_1.IsNotEmpty)(),
     __metadata("design:type", Number)
 ], CreateTransferDto.prototype, "transferAmount", void 0);
 __decorate([
-    (0, swagger_1.ApiPropertyOptional)({ description: 'Transfer documents' }),
-    (0, class_validator_1.IsObject)(),
+    (0, swagger_1.ApiPropertyOptional)({ description: 'Supporting documents' }),
+    (0, class_validator_1.IsArray)(),
+    (0, class_validator_1.IsString)({ each: true }),
     (0, class_validator_1.IsOptional)(),
-    __metadata("design:type", Object)
+    __metadata("design:type", Array)
 ], CreateTransferDto.prototype, "documents", void 0);
 __decorate([
     (0, swagger_1.ApiPropertyOptional)({ description: 'Reason for transfer' }),

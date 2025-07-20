@@ -9,21 +9,30 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.User = void 0;
+exports.User = exports.UserRole = void 0;
 const typeorm_1 = require("typeorm");
-const base_entity_1 = require("../../../common/entities/base.entity");
-const user_role_enum_1 = require("../../../common/enums/user-role.enum");
 const class_transformer_1 = require("class-transformer");
 const bcrypt = require("bcrypt");
-let User = class User extends base_entity_1.BaseEntity {
+var UserRole;
+(function (UserRole) {
+    UserRole["ADMIN"] = "ADMIN";
+    UserRole["LAND_OFFICER"] = "LAND_OFFICER";
+    UserRole["CITIZEN"] = "CITIZEN";
+})(UserRole || (exports.UserRole = UserRole = {}));
+let User = class User {
+    id;
     firstName;
     lastName;
     email;
     password;
-    role;
     phoneNumber;
-    nationalId;
-    isActive;
+    address;
+    role;
+    createdAt;
+    updatedAt;
+    get fullName() {
+        return `${this.firstName} ${this.lastName}`;
+    }
     async hashPassword() {
         if (this.password) {
             const salt = await bcrypt.genSalt();
@@ -35,6 +44,10 @@ let User = class User extends base_entity_1.BaseEntity {
     }
 };
 exports.User = User;
+__decorate([
+    (0, typeorm_1.PrimaryGeneratedColumn)('uuid'),
+    __metadata("design:type", String)
+], User.prototype, "id", void 0);
 __decorate([
     (0, typeorm_1.Column)(),
     __metadata("design:type", String)
@@ -53,25 +66,29 @@ __decorate([
     __metadata("design:type", String)
 ], User.prototype, "password", void 0);
 __decorate([
-    (0, typeorm_1.Column)({
-        type: 'enum',
-        enum: user_role_enum_1.UserRole,
-        default: user_role_enum_1.UserRole.CITIZEN
-    }),
-    __metadata("design:type", String)
-], User.prototype, "role", void 0);
-__decorate([
     (0, typeorm_1.Column)({ nullable: true }),
     __metadata("design:type", String)
 ], User.prototype, "phoneNumber", void 0);
 __decorate([
     (0, typeorm_1.Column)({ nullable: true }),
     __metadata("design:type", String)
-], User.prototype, "nationalId", void 0);
+], User.prototype, "address", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ default: false }),
-    __metadata("design:type", Boolean)
-], User.prototype, "isActive", void 0);
+    (0, typeorm_1.Column)({
+        type: 'enum',
+        enum: UserRole,
+        default: UserRole.CITIZEN
+    }),
+    __metadata("design:type", String)
+], User.prototype, "role", void 0);
+__decorate([
+    (0, typeorm_1.CreateDateColumn)(),
+    __metadata("design:type", Date)
+], User.prototype, "createdAt", void 0);
+__decorate([
+    (0, typeorm_1.UpdateDateColumn)(),
+    __metadata("design:type", Date)
+], User.prototype, "updatedAt", void 0);
 __decorate([
     (0, typeorm_1.BeforeInsert)(),
     (0, typeorm_1.BeforeUpdate)(),

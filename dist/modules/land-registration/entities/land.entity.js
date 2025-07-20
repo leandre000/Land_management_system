@@ -9,37 +9,47 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Land = void 0;
+exports.Land = exports.LandStatus = void 0;
 const typeorm_1 = require("typeorm");
-const base_entity_1 = require("../../../common/entities/base.entity");
 const user_entity_1 = require("../../users/entities/user.entity");
-const land_status_enum_1 = require("../../../common/enums/land-status.enum");
-let Land = class Land extends base_entity_1.BaseEntity {
-    title;
+var LandStatus;
+(function (LandStatus) {
+    LandStatus["REGISTERED"] = "REGISTERED";
+    LandStatus["PENDING_TRANSFER"] = "PENDING_TRANSFER";
+    LandStatus["UNDER_DISPUTE"] = "UNDER_DISPUTE";
+    LandStatus["PENDING_CONSTRUCTION"] = "PENDING_CONSTRUCTION";
+})(LandStatus || (exports.LandStatus = LandStatus = {}));
+let Land = class Land {
+    id;
     plotNumber;
-    area;
     location;
-    coordinates;
+    area;
+    title;
     boundaries;
-    status;
     description;
     documents;
-    owner;
     value;
-    lastValuationDate;
-    isVerified;
+    status;
+    owner;
     verifiedBy;
     verificationDate;
+    isVerified;
+    createdAt;
+    updatedAt;
 };
 exports.Land = Land;
 __decorate([
-    (0, typeorm_1.Column)(),
+    (0, typeorm_1.PrimaryGeneratedColumn)('uuid'),
     __metadata("design:type", String)
-], Land.prototype, "title", void 0);
+], Land.prototype, "id", void 0);
 __decorate([
     (0, typeorm_1.Column)(),
     __metadata("design:type", String)
 ], Land.prototype, "plotNumber", void 0);
+__decorate([
+    (0, typeorm_1.Column)('jsonb'),
+    __metadata("design:type", Object)
+], Land.prototype, "location", void 0);
 __decorate([
     (0, typeorm_1.Column)('decimal', { precision: 10, scale: 2 }),
     __metadata("design:type", Number)
@@ -47,55 +57,55 @@ __decorate([
 __decorate([
     (0, typeorm_1.Column)(),
     __metadata("design:type", String)
-], Land.prototype, "location", void 0);
+], Land.prototype, "title", void 0);
 __decorate([
-    (0, typeorm_1.Column)('jsonb'),
-    __metadata("design:type", Object)
-], Land.prototype, "coordinates", void 0);
-__decorate([
-    (0, typeorm_1.Column)('text', { array: true, nullable: true }),
+    (0, typeorm_1.Column)('simple-array', { nullable: true }),
     __metadata("design:type", Array)
 ], Land.prototype, "boundaries", void 0);
 __decorate([
-    (0, typeorm_1.Column)({
-        type: 'enum',
-        enum: land_status_enum_1.LandStatus,
-        default: land_status_enum_1.LandStatus.PENDING_REGISTRATION
-    }),
-    __metadata("design:type", String)
-], Land.prototype, "status", void 0);
-__decorate([
-    (0, typeorm_1.Column)({ type: 'text', nullable: true }),
+    (0, typeorm_1.Column)({ nullable: true }),
     __metadata("design:type", String)
 ], Land.prototype, "description", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'jsonb', nullable: true }),
+    (0, typeorm_1.Column)('jsonb', { nullable: true }),
     __metadata("design:type", Object)
 ], Land.prototype, "documents", void 0);
+__decorate([
+    (0, typeorm_1.Column)('decimal', { precision: 10, scale: 2, nullable: true }),
+    __metadata("design:type", Number)
+], Land.prototype, "value", void 0);
+__decorate([
+    (0, typeorm_1.Column)({
+        type: 'enum',
+        enum: LandStatus,
+        default: LandStatus.REGISTERED,
+    }),
+    __metadata("design:type", String)
+], Land.prototype, "status", void 0);
 __decorate([
     (0, typeorm_1.ManyToOne)(() => user_entity_1.User, { eager: true }),
     __metadata("design:type", user_entity_1.User)
 ], Land.prototype, "owner", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'decimal', precision: 10, scale: 2, default: 0 }),
-    __metadata("design:type", Number)
-], Land.prototype, "value", void 0);
+    (0, typeorm_1.ManyToOne)(() => user_entity_1.User, { nullable: true, eager: true }),
+    __metadata("design:type", user_entity_1.User)
+], Land.prototype, "verifiedBy", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'timestamp with time zone', nullable: true }),
+    (0, typeorm_1.Column)({ type: 'timestamp', nullable: true }),
     __metadata("design:type", Date)
-], Land.prototype, "lastValuationDate", void 0);
+], Land.prototype, "verificationDate", void 0);
 __decorate([
     (0, typeorm_1.Column)({ default: false }),
     __metadata("design:type", Boolean)
 ], Land.prototype, "isVerified", void 0);
 __decorate([
-    (0, typeorm_1.ManyToOne)(() => user_entity_1.User, { nullable: true, eager: true }),
-    __metadata("design:type", user_entity_1.User)
-], Land.prototype, "verifiedBy", void 0);
-__decorate([
-    (0, typeorm_1.Column)({ type: 'timestamp with time zone', nullable: true }),
+    (0, typeorm_1.CreateDateColumn)(),
     __metadata("design:type", Date)
-], Land.prototype, "verificationDate", void 0);
+], Land.prototype, "createdAt", void 0);
+__decorate([
+    (0, typeorm_1.UpdateDateColumn)(),
+    __metadata("design:type", Date)
+], Land.prototype, "updatedAt", void 0);
 exports.Land = Land = __decorate([
     (0, typeorm_1.Entity)('lands')
 ], Land);

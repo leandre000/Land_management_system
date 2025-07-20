@@ -19,7 +19,7 @@ const land_transfer_module_1 = require("./modules/land-transfer/land-transfer.mo
 const land_taxes_module_1 = require("./modules/land-taxes/land-taxes.module");
 const conflict_resolution_module_1 = require("./modules/conflict-resolution/conflict-resolution.module");
 const urbanization_module_1 = require("./modules/urbanization/urbanization.module");
-const settings_module_1 = require("./modules/settings/settings.module");
+const notifications_module_1 = require("./modules/notifications/notifications.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -53,7 +53,7 @@ exports.AppModule = AppModule = __decorate([
             land_taxes_module_1.LandTaxesModule,
             conflict_resolution_module_1.ConflictResolutionModule,
             urbanization_module_1.UrbanizationModule,
-            settings_module_1.SettingsModule,
+            notifications_module_1.NotificationsModule,
         ],
     })
 ], AppModule);

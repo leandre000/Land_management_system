@@ -1,10 +1,10 @@
-import { UserRole } from '../../../common/enums/user-role.enum';
+import { UserRole } from '../entities/user.entity';
 export declare class CreateUserDto {
     firstName: string;
     lastName: string;
     email: string;
     password: string;
-    role?: UserRole;
     phoneNumber?: string;
-    nationalId?: string;
+    address?: string;
+    role?: UserRole;
 }

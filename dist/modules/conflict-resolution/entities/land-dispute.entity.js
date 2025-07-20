@@ -11,7 +11,6 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.LandDispute = exports.DisputeType = exports.DisputeStatus = void 0;
 const typeorm_1 = require("typeorm");
-const base_entity_1 = require("../../../common/entities/base.entity");
 const user_entity_1 = require("../../users/entities/user.entity");
 const land_entity_1 = require("../../land-registration/entities/land.entity");
 var DisputeStatus;
@@ -19,8 +18,7 @@ var DisputeStatus;
     DisputeStatus["PENDING"] = "pending";
     DisputeStatus["IN_MEDIATION"] = "in_mediation";
     DisputeStatus["RESOLVED"] = "resolved";
-    DisputeStatus["ESCALATED"] = "escalated";
-    DisputeStatus["CLOSED"] = "closed";
+    DisputeStatus["CANCELLED"] = "cancelled";
 })(DisputeStatus || (exports.DisputeStatus = DisputeStatus = {}));
 var DisputeType;
 (function (DisputeType) {
@@ -30,25 +28,30 @@ var DisputeType;
     DisputeType["ENCROACHMENT"] = "encroachment";
     DisputeType["OTHER"] = "other";
 })(DisputeType || (exports.DisputeType = DisputeType = {}));
-let LandDispute = class LandDispute extends base_entity_1.BaseEntity {
+let LandDispute = class LandDispute {
+    id;
     land;
     complainant;
+    mediator;
     respondents;
     type;
     description;
-    status;
     evidence;
-    witnesses;
-    mediator;
-    mediationDate;
+    status;
     resolution;
-    resolutionDate;
+    resolvedAt;
     comments;
     requiresFieldVisit;
     fieldVisitDate;
     fieldVisitReport;
+    createdAt;
+    updatedAt;
 };
 exports.LandDispute = LandDispute;
+__decorate([
+    (0, typeorm_1.PrimaryGeneratedColumn)('uuid'),
+    __metadata("design:type", String)
+], LandDispute.prototype, "id", void 0);
 __decorate([
     (0, typeorm_1.ManyToOne)(() => land_entity_1.Land, { eager: true }),
     __metadata("design:type", land_entity_1.Land)
@@ -58,8 +61,11 @@ __decorate([
     __metadata("design:type", user_entity_1.User)
 ], LandDispute.prototype, "complainant", void 0);
 __decorate([
-    (0, typeorm_1.ManyToMany)(() => user_entity_1.User),
-    (0, typeorm_1.JoinTable)(),
+    (0, typeorm_1.ManyToOne)(() => user_entity_1.User, { eager: true, nullable: true }),
+    __metadata("design:type", user_entity_1.User)
+], LandDispute.prototype, "mediator", void 0);
+__decorate([
+    (0, typeorm_1.Column)('simple-array'),
     __metadata("design:type", Array)
 ], LandDispute.prototype, "respondents", void 0);
 __decorate([
@@ -74,6 +80,10 @@ __decorate([
     __metadata("design:type", String)
 ], LandDispute.prototype, "description", void 0);
 __decorate([
+    (0, typeorm_1.Column)('text', { array: true, default: [] }),
+    __metadata("design:type", Array)
+], LandDispute.prototype, "evidence", void 0);
+__decorate([
     (0, typeorm_1.Column)({
         type: 'enum',
         enum: DisputeStatus,
@@ -82,46 +92,38 @@ __decorate([
     __metadata("design:type", String)
 ], LandDispute.prototype, "status", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'jsonb', nullable: true }),
-    __metadata("design:type", Object)
-], LandDispute.prototype, "evidence", void 0);
-__decorate([
-    (0, typeorm_1.Column)({ type: 'text', array: true, default: [] }),
-    __metadata("design:type", Array)
-], LandDispute.prototype, "witnesses", void 0);
-__decorate([
-    (0, typeorm_1.ManyToOne)(() => user_entity_1.User, { nullable: true, eager: true }),
-    __metadata("design:type", user_entity_1.User)
-], LandDispute.prototype, "mediator", void 0);
-__decorate([
-    (0, typeorm_1.Column)({ type: 'timestamp with time zone', nullable: true }),
-    __metadata("design:type", Date)
-], LandDispute.prototype, "mediationDate", void 0);
-__decorate([
-    (0, typeorm_1.Column)({ type: 'text', nullable: true }),
+    (0, typeorm_1.Column)('text', { nullable: true }),
     __metadata("design:type", String)
 ], LandDispute.prototype, "resolution", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'timestamp with time zone', nullable: true }),
+    (0, typeorm_1.Column)({ type: 'timestamp', nullable: true }),
     __metadata("design:type", Date)
-], LandDispute.prototype, "resolutionDate", void 0);
+], LandDispute.prototype, "resolvedAt", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'text', array: true, default: [] }),
+    (0, typeorm_1.Column)('text', { array: true, default: [] }),
     __metadata("design:type", Array)
 ], LandDispute.prototype, "comments", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'boolean', default: false }),
+    (0, typeorm_1.Column)({ default: false }),
     __metadata("design:type", Boolean)
 ], LandDispute.prototype, "requiresFieldVisit", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'timestamp with time zone', nullable: true }),
+    (0, typeorm_1.Column)({ type: 'timestamp', nullable: true }),
     __metadata("design:type", Date)
 ], LandDispute.prototype, "fieldVisitDate", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'text', nullable: true }),
+    (0, typeorm_1.Column)('text', { nullable: true }),
     __metadata("design:type", String)
 ], LandDispute.prototype, "fieldVisitReport", void 0);
+__decorate([
+    (0, typeorm_1.CreateDateColumn)(),
+    __metadata("design:type", Date)
+], LandDispute.prototype, "createdAt", void 0);
+__decorate([
+    (0, typeorm_1.UpdateDateColumn)(),
+    __metadata("design:type", Date)
+], LandDispute.prototype, "updatedAt", void 0);
 exports.LandDispute = LandDispute = __decorate([
-    (0, typeorm_1.Entity)('land_disputes')
+    (0, typeorm_1.Entity)()
 ], LandDispute);
 //# sourceMappingURL=land-dispute.entity.js.map

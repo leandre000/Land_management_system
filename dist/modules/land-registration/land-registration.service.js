@@ -17,83 +17,91 @@ const common_1 = require("@nestjs/common");
 const typeorm_1 = require("@nestjs/typeorm");
 const typeorm_2 = require("typeorm");
 const land_entity_1 = require("./entities/land.entity");
-const land_status_enum_1 = require("../../common/enums/land-status.enum");
+const rabbitmq_service_1 = require("../rabbitmq/rabbitmq.service");
+const users_service_1 = require("../users/users.service");
 let LandRegistrationService = class LandRegistrationService {
     landRepository;
-    constructor(landRepository) {
+    rabbitMQService;
+    usersService;
+    constructor(landRepository, rabbitMQService, usersService) {
         this.landRepository = landRepository;
+        this.rabbitMQService = rabbitMQService;
+        this.usersService = usersService;
     }
-    async create(createLandDto, owner) {
-        const existingLand = await this.landRepository.findOne({
-            where: { plotNumber: createLandDto.plotNumber },
-        });
-        if (existingLand) {
-            throw new common_1.ConflictException('Plot number already exists');
-        }
-        const land = this.landRepository.create({
+    async create(createLandDto) {
+        const owner = await this.usersService.findOne(createLandDto.ownerId);
+        const land = new land_entity_1.Land();
+        Object.assign(land, {
             ...createLandDto,
             owner,
-            status: land_status_enum_1.LandStatus.PENDING_REGISTRATION,
+            status: land_entity_1.LandStatus.REGISTERED,
         });
-        return this.landRepository.save(land);
+        const savedLand = await this.landRepository.save(land);
+        await this.rabbitMQService.handleLandRegistration(savedLand.id, savedLand);
+        return savedLand;
     }
     async findAll() {
-        return this.landRepository.find();
+        return this.landRepository.find({
+            relations: ['owner'],
+        });
     }
     async findOne(id) {
-        const land = await this.landRepository.findOne({ where: { id } });
+        const land = await this.landRepository.findOne({
+            where: { id },
+            relations: ['owner'],
+        });
         if (!land) {
-            throw new common_1.NotFoundException(`Land with ID "${id}" not found`);
+            throw new common_1.NotFoundException(`Land with ID ${id} not found`);
         }
         return land;
+    }
+    async update(id, updateLandDto) {
+        const land = await this.findOne(id);
+        if (updateLandDto.ownerId) {
+            const newOwner = await this.usersService.findOne(updateLandDto.ownerId);
+            land.owner = newOwner;
+        }
+        Object.assign(land, updateLandDto);
+        const updatedLand = await this.landRepository.save(land);
+        await this.rabbitMQService.handleLandUpdate(id, {
+            ...updatedLand,
+            changes: updateLandDto,
+        });
+        return updatedLand;
+    }
+    async remove(id) {
+        const land = await this.findOne(id);
+        await this.landRepository.remove(land);
+    }
+    async verify(id, verifiedBy) {
+        const land = await this.findOne(id);
+        const verifier = await this.usersService.findOne(verifiedBy);
+        land.isVerified = true;
+        land.verifiedBy = verifier;
+        land.verificationDate = new Date();
+        const verifiedLand = await this.landRepository.save(land);
+        await this.rabbitMQService.handleLandVerification(id, verifiedLand);
+        return verifiedLand;
     }
     async findByOwner(ownerId) {
         return this.landRepository.find({
             where: { owner: { id: ownerId } },
+            relations: ['owner'],
         });
     }
-    async update(id, updateLandDto, user) {
-        const land = await this.findOne(id);
-        if (land.owner.id !== user.id) {
-            throw new common_1.ConflictException('You are not authorized to update this land');
-        }
-        if (updateLandDto.plotNumber && updateLandDto.plotNumber !== land.plotNumber) {
-            const existingLand = await this.landRepository.findOne({
-                where: { plotNumber: updateLandDto.plotNumber },
-            });
-            if (existingLand) {
-                throw new common_1.ConflictException('Plot number already exists');
-            }
-        }
-        Object.assign(land, updateLandDto);
-        return this.landRepository.save(land);
-    }
-    async verify(id, verifyLandDto, verifier) {
-        const land = await this.findOne(id);
-        if (land.isVerified) {
-            throw new common_1.ConflictException('Land is already verified');
-        }
-        land.isVerified = verifyLandDto.isVerified;
-        land.verifiedBy = verifier;
-        land.verificationDate = new Date();
-        land.status = verifyLandDto.isVerified ? land_status_enum_1.LandStatus.REGISTERED : land_status_enum_1.LandStatus.PENDING_REGISTRATION;
-        return this.landRepository.save(land);
-    }
-    async remove(id, user) {
-        const land = await this.findOne(id);
-        if (land.owner.id !== user.id) {
-            throw new common_1.ConflictException('You are not authorized to delete this land');
-        }
-        const result = await this.landRepository.delete(id);
-        if (result.affected === 0) {
-            throw new common_1.NotFoundException(`Land with ID "${id}" not found`);
-        }
+    async findByStatus(status) {
+        return this.landRepository.find({
+            where: { status },
+            relations: ['owner'],
+        });
     }
 };
 exports.LandRegistrationService = LandRegistrationService;
 exports.LandRegistrationService = LandRegistrationService = __decorate([
     (0, common_1.Injectable)(),
     __param(0, (0, typeorm_1.InjectRepository)(land_entity_1.Land)),
-    __metadata("design:paramtypes", [typeorm_2.Repository])
+    __metadata("design:paramtypes", [typeorm_2.Repository,
+        rabbitmq_service_1.RabbitMQService,
+        users_service_1.UsersService])
 ], LandRegistrationService);
 //# sourceMappingURL=land-registration.service.js.map

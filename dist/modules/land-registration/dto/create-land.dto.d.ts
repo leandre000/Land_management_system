@@ -1,9 +1,13 @@
 export declare class CreateLandDto {
-    title: string;
+    ownerId: string;
     plotNumber: string;
+    location: {
+        latitude: number;
+        longitude: number;
+        address: string;
+    };
     area: number;
-    location: string;
-    coordinates: object;
+    title: string;
     boundaries?: string[];
     description?: string;
     documents?: object;

@@ -1,23 +1,29 @@
-import { BaseEntity } from '../../../common/entities/base.entity';
 import { User } from '../../users/entities/user.entity';
-import { LandStatus } from '../../../common/enums/land-status.enum';
-export declare class Land extends BaseEntity {
-    title: string;
+export declare enum LandStatus {
+    REGISTERED = "REGISTERED",
+    PENDING_TRANSFER = "PENDING_TRANSFER",
+    UNDER_DISPUTE = "UNDER_DISPUTE",
+    PENDING_CONSTRUCTION = "PENDING_CONSTRUCTION"
+}
+export declare class Land {
+    id: string;
     plotNumber: string;
-    area: number;
-    location: string;
-    coordinates: {
+    location: {
         latitude: number;
         longitude: number;
+        address: string;
     };
-    boundaries: string[];
+    area: number;
+    title: string;
+    boundaries?: string[];
+    description?: string;
+    documents?: object;
+    value?: number;
     status: LandStatus;
-    description: string;
-    documents: object;
     owner: User;
-    value: number;
-    lastValuationDate: Date;
+    verifiedBy?: User;
+    verificationDate?: Date;
     isVerified: boolean;
-    verifiedBy: User;
-    verificationDate: Date;
+    createdAt: Date;
+    updatedAt: Date;
 }

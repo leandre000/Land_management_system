@@ -10,7 +10,7 @@ export declare class AuthController {
             email: string;
             firstName: string;
             lastName: string;
-            role: import("../../common/enums/user-role.enum").UserRole;
+            role: import("../users/entities/user.entity").UserRole;
         };
     }>;
 }

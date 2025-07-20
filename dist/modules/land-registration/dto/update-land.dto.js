@@ -13,21 +13,14 @@ exports.UpdateLandDto = void 0;
 const swagger_1 = require("@nestjs/swagger");
 const create_land_dto_1 = require("./create-land.dto");
 const class_validator_1 = require("class-validator");
-const land_status_enum_1 = require("../../../common/enums/land-status.enum");
-const user_entity_1 = require("../../users/entities/user.entity");
+const land_entity_1 = require("../entities/land.entity");
 class UpdateLandDto extends (0, swagger_1.PartialType)(create_land_dto_1.CreateLandDto) {
     status;
-    owner;
 }
 exports.UpdateLandDto = UpdateLandDto;
 __decorate([
-    (0, class_validator_1.IsEnum)(land_status_enum_1.LandStatus),
+    (0, class_validator_1.IsEnum)(land_entity_1.LandStatus),
     (0, class_validator_1.IsOptional)(),
     __metadata("design:type", String)
 ], UpdateLandDto.prototype, "status", void 0);
-__decorate([
-    (0, class_validator_1.IsObject)(),
-    (0, class_validator_1.IsOptional)(),
-    __metadata("design:type", user_entity_1.User)
-], UpdateLandDto.prototype, "owner", void 0);
 //# sourceMappingURL=update-land.dto.js.map

@@ -1,9 +1,7 @@
-import { BaseEntity } from '../../../common/entities/base.entity';
 import { User } from '../../users/entities/user.entity';
 import { Land } from '../../land-registration/entities/land.entity';
 export declare enum PermitStatus {
     PENDING = "pending",
-    IN_REVIEW = "in_review",
     APPROVED = "approved",
     REJECTED = "rejected",
     EXPIRED = "expired"
@@ -15,27 +13,25 @@ export declare enum ConstructionType {
     MIXED_USE = "mixed_use",
     OTHER = "other"
 }
-export declare class ConstructionPermit extends BaseEntity {
+export declare class ConstructionPermit {
+    id: string;
     land: Land;
     applicant: User;
     constructionType: ConstructionType;
     projectDescription: string;
     estimatedCost: number;
-    totalArea: number;
-    floors: number;
+    documents: string[];
     status: PermitStatus;
-    architecturalPlans: object;
-    structuralPlans: object;
-    proposedStartDate: Date;
-    proposedEndDate: Date;
     approvalDate: Date;
-    expiryDate: Date;
-    reviewedBy: User;
-    reviewComments: string;
-    conditions: string[];
+    rejectedAt: Date;
+    rejectionReason: string;
+    permitFee: number;
+    feesPaid: boolean;
     requiresInspection: boolean;
     inspectionDate: Date;
     inspectionReport: string;
-    permitFee: number;
-    feesPaid: boolean;
+    conditions: string[];
+    expiryDate: Date;
+    createdAt: Date;
+    updatedAt: Date;
 }

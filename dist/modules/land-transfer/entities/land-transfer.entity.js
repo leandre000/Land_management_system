@@ -11,17 +11,16 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.LandTransfer = exports.TransferStatus = void 0;
 const typeorm_1 = require("typeorm");
-const base_entity_1 = require("../../../common/entities/base.entity");
 const user_entity_1 = require("../../users/entities/user.entity");
 const land_entity_1 = require("../../land-registration/entities/land.entity");
 var TransferStatus;
 (function (TransferStatus) {
-    TransferStatus["PENDING"] = "pending";
-    TransferStatus["APPROVED"] = "approved";
-    TransferStatus["REJECTED"] = "rejected";
-    TransferStatus["CANCELLED"] = "cancelled";
+    TransferStatus["PENDING"] = "PENDING";
+    TransferStatus["APPROVED"] = "APPROVED";
+    TransferStatus["REJECTED"] = "REJECTED";
 })(TransferStatus || (exports.TransferStatus = TransferStatus = {}));
-let LandTransfer = class LandTransfer extends base_entity_1.BaseEntity {
+let LandTransfer = class LandTransfer {
+    id;
     land;
     fromOwner;
     toOwner;
@@ -29,21 +28,29 @@ let LandTransfer = class LandTransfer extends base_entity_1.BaseEntity {
     transferAmount;
     documents;
     reason;
-    approvedBy;
+    rejectionReason;
     approvalDate;
-    rejectionReason = '';
+    createdAt;
+    updatedAt;
 };
 exports.LandTransfer = LandTransfer;
 __decorate([
+    (0, typeorm_1.PrimaryGeneratedColumn)('uuid'),
+    __metadata("design:type", String)
+], LandTransfer.prototype, "id", void 0);
+__decorate([
     (0, typeorm_1.ManyToOne)(() => land_entity_1.Land, { eager: true }),
+    (0, typeorm_1.JoinColumn)(),
     __metadata("design:type", land_entity_1.Land)
 ], LandTransfer.prototype, "land", void 0);
 __decorate([
     (0, typeorm_1.ManyToOne)(() => user_entity_1.User, { eager: true }),
+    (0, typeorm_1.JoinColumn)(),
     __metadata("design:type", user_entity_1.User)
 ], LandTransfer.prototype, "fromOwner", void 0);
 __decorate([
     (0, typeorm_1.ManyToOne)(() => user_entity_1.User, { eager: true }),
+    (0, typeorm_1.JoinColumn)(),
     __metadata("design:type", user_entity_1.User)
 ], LandTransfer.prototype, "toOwner", void 0);
 __decorate([
@@ -59,25 +66,29 @@ __decorate([
     __metadata("design:type", Number)
 ], LandTransfer.prototype, "transferAmount", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'jsonb', nullable: true }),
-    __metadata("design:type", Object)
+    (0, typeorm_1.Column)({ type: 'simple-array', nullable: true }),
+    __metadata("design:type", Array)
 ], LandTransfer.prototype, "documents", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'text', nullable: true }),
+    (0, typeorm_1.Column)({ nullable: true }),
     __metadata("design:type", String)
 ], LandTransfer.prototype, "reason", void 0);
 __decorate([
-    (0, typeorm_1.ManyToOne)(() => user_entity_1.User, { nullable: true, eager: true }),
-    __metadata("design:type", user_entity_1.User)
-], LandTransfer.prototype, "approvedBy", void 0);
+    (0, typeorm_1.Column)({ nullable: true }),
+    __metadata("design:type", String)
+], LandTransfer.prototype, "rejectionReason", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'timestamp with time zone', nullable: true }),
+    (0, typeorm_1.Column)({ type: 'timestamp', nullable: true }),
     __metadata("design:type", Date)
 ], LandTransfer.prototype, "approvalDate", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'text', nullable: true, default: '' }),
-    __metadata("design:type", String)
-], LandTransfer.prototype, "rejectionReason", void 0);
+    (0, typeorm_1.CreateDateColumn)(),
+    __metadata("design:type", Date)
+], LandTransfer.prototype, "createdAt", void 0);
+__decorate([
+    (0, typeorm_1.UpdateDateColumn)(),
+    __metadata("design:type", Date)
+], LandTransfer.prototype, "updatedAt", void 0);
 exports.LandTransfer = LandTransfer = __decorate([
     (0, typeorm_1.Entity)('land_transfers')
 ], LandTransfer);

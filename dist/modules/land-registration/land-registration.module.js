@@ -9,15 +9,23 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.LandRegistrationModule = void 0;
 const common_1 = require("@nestjs/common");
 const typeorm_1 = require("@nestjs/typeorm");
+const land_entity_1 = require("./entities/land.entity");
 const land_registration_service_1 = require("./land-registration.service");
 const land_registration_controller_1 = require("./land-registration.controller");
-const land_entity_1 = require("./entities/land.entity");
+const rabbitmq_module_1 = require("../rabbitmq/rabbitmq.module");
+const redis_module_1 = require("../redis/redis.module");
+const users_module_1 = require("../users/users.module");
 let LandRegistrationModule = class LandRegistrationModule {
 };
 exports.LandRegistrationModule = LandRegistrationModule;
 exports.LandRegistrationModule = LandRegistrationModule = __decorate([
     (0, common_1.Module)({
-        imports: [typeorm_1.TypeOrmModule.forFeature([land_entity_1.Land])],
+        imports: [
+            typeorm_1.TypeOrmModule.forFeature([land_entity_1.Land]),
+            rabbitmq_module_1.RabbitMQModule,
+            redis_module_1.RedisModule,
+            users_module_1.UsersModule,
+        ],
         controllers: [land_registration_controller_1.LandRegistrationController],
         providers: [land_registration_service_1.LandRegistrationService],
         exports: [land_registration_service_1.LandRegistrationService],

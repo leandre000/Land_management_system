@@ -1,18 +1,19 @@
 import { UrbanizationService } from './urbanization.service';
 import { CreatePermitDto } from './dto/create-permit.dto';
-import { ReviewPermitDto } from './dto/review-permit.dto';
-import { ConstructionPermit } from './entities/construction-permit.entity';
+import { UpdatePermitDto } from './dto/update-permit.dto';
 export declare class UrbanizationController {
     private readonly urbanizationService;
     constructor(urbanizationService: UrbanizationService);
-    create(createPermitDto: CreatePermitDto, req: any): Promise<ConstructionPermit>;
-    findAll(): Promise<ConstructionPermit[]>;
-    getPendingPermits(): Promise<ConstructionPermit[]>;
-    getApprovedPermits(): Promise<ConstructionPermit[]>;
-    findMyPermits(req: any): Promise<ConstructionPermit[]>;
-    findOne(id: string): Promise<ConstructionPermit>;
-    review(id: string, reviewPermitDto: ReviewPermitDto, req: any): Promise<ConstructionPermit>;
-    recordPayment(id: string): Promise<ConstructionPermit>;
-    scheduleInspection(id: string, date: Date): Promise<ConstructionPermit>;
-    submitInspectionReport(id: string, report: string): Promise<ConstructionPermit>;
+    create(createPermitDto: CreatePermitDto): Promise<import("./entities/construction-permit.entity").ConstructionPermit>;
+    findAll(): Promise<import("./entities/construction-permit.entity").ConstructionPermit[]>;
+    getPendingPermits(): Promise<import("./entities/construction-permit.entity").ConstructionPermit[]>;
+    getApprovedPermits(): Promise<import("./entities/construction-permit.entity").ConstructionPermit[]>;
+    findByApplicant(req: any): Promise<import("./entities/construction-permit.entity").ConstructionPermit[]>;
+    findOne(id: string): Promise<import("./entities/construction-permit.entity").ConstructionPermit>;
+    update(id: string, updatePermitDto: UpdatePermitDto): Promise<import("./entities/construction-permit.entity").ConstructionPermit>;
+    remove(id: string): Promise<void>;
+    approve(id: string): Promise<import("./entities/construction-permit.entity").ConstructionPermit>;
+    reject(id: string, reason: string): Promise<import("./entities/construction-permit.entity").ConstructionPermit>;
+    recordInspection(id: string, report: string): Promise<import("./entities/construction-permit.entity").ConstructionPermit>;
+    updateFeeStatus(id: string, paid: boolean): Promise<import("./entities/construction-permit.entity").ConstructionPermit>;
 }

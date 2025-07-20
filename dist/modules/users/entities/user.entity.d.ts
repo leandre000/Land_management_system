@@ -1,14 +1,20 @@
-import { BaseEntity } from '../../../common/entities/base.entity';
-import { UserRole } from '../../../common/enums/user-role.enum';
-export declare class User extends BaseEntity {
+export declare enum UserRole {
+    ADMIN = "ADMIN",
+    LAND_OFFICER = "LAND_OFFICER",
+    CITIZEN = "CITIZEN"
+}
+export declare class User {
+    id: string;
     firstName: string;
     lastName: string;
     email: string;
     password: string;
+    phoneNumber?: string;
+    address?: string;
     role: UserRole;
-    phoneNumber: string;
-    nationalId: string;
-    isActive: boolean;
+    createdAt: Date;
+    updatedAt: Date;
+    get fullName(): string;
     hashPassword(): Promise<void>;
     validatePassword(password: string): Promise<boolean>;
 }

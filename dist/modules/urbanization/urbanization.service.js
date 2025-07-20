@@ -18,31 +18,30 @@ const typeorm_1 = require("@nestjs/typeorm");
 const typeorm_2 = require("typeorm");
 const construction_permit_entity_1 = require("./entities/construction-permit.entity");
 const land_registration_service_1 = require("../land-registration/land-registration.service");
-const land_status_enum_1 = require("../../common/enums/land-status.enum");
-const schedule_1 = require("@nestjs/schedule");
+const notifications_service_1 = require("../notifications/notifications.service");
+const land_entity_1 = require("../land-registration/entities/land.entity");
+const users_service_1 = require("../users/users.service");
 let UrbanizationService = class UrbanizationService {
     permitRepository;
     landService;
-    constructor(permitRepository, landService) {
+    notificationsService;
+    usersService;
+    constructor(permitRepository, landService, notificationsService, usersService) {
         this.permitRepository = permitRepository;
         this.landService = landService;
+        this.notificationsService = notificationsService;
+        this.usersService = usersService;
     }
-    async create(createPermitDto, applicant) {
-        const land = await this.landService.findOne(createPermitDto.landId);
-        if (land.owner.id !== applicant.id) {
-            throw new common_1.ConflictException('You do not own this land');
+    async create(createPermitDto) {
+        const [land, applicant] = await Promise.all([
+            this.landService.findOne(createPermitDto.landId),
+            this.usersService.findOne(createPermitDto.applicantId),
+        ]);
+        if (land.status === land_entity_1.LandStatus.UNDER_DISPUTE) {
+            throw new common_1.ConflictException('Cannot apply for construction permit while land is under dispute');
         }
-        if (!land.isVerified || land.status !== land_status_enum_1.LandStatus.REGISTERED) {
-            throw new common_1.ConflictException('Land must be registered and verified before applying for construction permit');
-        }
-        const existingPermit = await this.permitRepository.findOne({
-            where: {
-                land: { id: land.id },
-                status: construction_permit_entity_1.PermitStatus.PENDING,
-            },
-        });
-        if (existingPermit) {
-            throw new common_1.ConflictException('There is already a pending permit for this land');
+        if (land.status === land_entity_1.LandStatus.PENDING_TRANSFER) {
+            throw new common_1.ConflictException('Cannot apply for construction permit while land transfer is pending');
         }
         const permit = this.permitRepository.create({
             ...createPermitDto,
@@ -50,110 +49,100 @@ let UrbanizationService = class UrbanizationService {
             applicant,
             status: construction_permit_entity_1.PermitStatus.PENDING,
         });
-        await this.landService.update(land.id, { status: land_status_enum_1.LandStatus.PENDING_CONSTRUCTION }, land.owner);
-        return this.permitRepository.save(permit);
+        const savedPermit = await this.permitRepository.save(permit);
+        await this.landService.update(land.id, {
+            status: land_entity_1.LandStatus.PENDING_CONSTRUCTION,
+        });
+        await this.notificationsService.sendNotification(savedPermit.applicant.id, notifications_service_1.NotificationType.PERMIT_APPLIED, {
+            permitId: savedPermit.id,
+            landId: land.id,
+            plotNumber: land.plotNumber,
+            constructionType: permit.constructionType,
+        });
+        return savedPermit;
     }
     async findAll() {
-        return this.permitRepository.find();
+        return this.permitRepository.find({
+            relations: ['land', 'applicant'],
+        });
     }
     async findOne(id) {
-        const permit = await this.permitRepository.findOne({ where: { id } });
+        const permit = await this.permitRepository.findOne({
+            where: { id },
+            relations: ['land', 'applicant'],
+        });
         if (!permit) {
-            throw new common_1.NotFoundException(`Construction permit with ID "${id}" not found`);
+            throw new common_1.NotFoundException(`Construction permit with ID ${id} not found`);
         }
         return permit;
     }
-    async findByUser(userId) {
+    async update(id, updatePermitDto) {
+        const permit = await this.findOne(id);
+        Object.assign(permit, updatePermitDto);
+        return this.permitRepository.save(permit);
+    }
+    async remove(id) {
+        const permit = await this.findOne(id);
+        await this.permitRepository.remove(permit);
+    }
+    async approve(id) {
+        const permit = await this.findOne(id);
+        permit.status = construction_permit_entity_1.PermitStatus.APPROVED;
+        permit.approvalDate = new Date();
+        permit.expiryDate = new Date();
+        permit.expiryDate.setFullYear(permit.expiryDate.getFullYear() + 1);
+        await this.landService.update(permit.land.id, {
+            status: land_entity_1.LandStatus.REGISTERED,
+        });
+        const approvedPermit = await this.permitRepository.save(permit);
+        await this.notificationsService.sendNotification(permit.applicant.id, notifications_service_1.NotificationType.PERMIT_APPROVED, {
+            permitId: approvedPermit.id,
+            landId: permit.land.id,
+            plotNumber: permit.land.plotNumber,
+            constructionType: permit.constructionType,
+        });
+        return approvedPermit;
+    }
+    async reject(id, reason) {
+        const permit = await this.findOne(id);
+        permit.status = construction_permit_entity_1.PermitStatus.REJECTED;
+        permit.rejectionReason = reason;
+        await this.landService.update(permit.land.id, {
+            status: land_entity_1.LandStatus.REGISTERED,
+        });
+        return this.permitRepository.save(permit);
+    }
+    async findByStatus(status) {
         return this.permitRepository.find({
-            where: { applicant: { id: userId } },
-            order: { createdAt: 'DESC' },
+            where: { status },
+            relations: ['land', 'applicant'],
         });
     }
-    async review(id, reviewPermitDto, reviewer) {
-        const permit = await this.findOne(id);
-        if (permit.status !== construction_permit_entity_1.PermitStatus.PENDING) {
-            throw new common_1.ConflictException('Permit is not in pending status');
-        }
-        permit.status = reviewPermitDto.approved ? construction_permit_entity_1.PermitStatus.APPROVED : construction_permit_entity_1.PermitStatus.REJECTED;
-        permit.reviewedBy = reviewer;
-        permit.reviewComments = reviewPermitDto.reviewComments;
-        permit.conditions = reviewPermitDto.conditions || [];
-        permit.requiresInspection = reviewPermitDto.requiresInspection || false;
-        permit.permitFee = reviewPermitDto.permitFee || 0;
-        if (reviewPermitDto.approved) {
-            permit.approvalDate = new Date();
-            permit.expiryDate = reviewPermitDto.expiryDate || new Date(Date.now() + 365 * 24 * 60 * 60 * 1000);
-            await this.landService.update(permit.land.id, { status: land_status_enum_1.LandStatus.CONSTRUCTION_APPROVED }, permit.land.owner);
-        }
-        else {
-            await this.landService.update(permit.land.id, { status: land_status_enum_1.LandStatus.REGISTERED }, permit.land.owner);
-        }
-        return this.permitRepository.save(permit);
+    async findByApplicant(applicantId) {
+        return this.permitRepository.find({
+            where: { applicant: { id: applicantId } },
+            relations: ['land', 'applicant'],
+        });
     }
-    async recordPayment(id) {
+    async recordInspection(id, report) {
         const permit = await this.findOne(id);
-        if (permit.status !== construction_permit_entity_1.PermitStatus.APPROVED) {
-            throw new common_1.ConflictException('Permit must be approved before recording payment');
-        }
-        if (permit.feesPaid) {
-            throw new common_1.ConflictException('Permit fees have already been paid');
-        }
-        permit.feesPaid = true;
-        return this.permitRepository.save(permit);
-    }
-    async scheduleInspection(id, date) {
-        const permit = await this.findOne(id);
-        if (!permit.requiresInspection) {
-            throw new common_1.ConflictException('This permit does not require inspection');
-        }
-        permit.inspectionDate = date;
-        return this.permitRepository.save(permit);
-    }
-    async submitInspectionReport(id, report) {
-        const permit = await this.findOne(id);
-        if (!permit.requiresInspection) {
-            throw new common_1.ConflictException('This permit does not require inspection');
-        }
         permit.inspectionReport = report;
+        permit.inspectionDate = new Date();
         return this.permitRepository.save(permit);
     }
-    async checkExpiredPermits() {
-        const expiredPermits = await this.permitRepository.find({
-            where: {
-                status: construction_permit_entity_1.PermitStatus.APPROVED,
-                expiryDate: (0, typeorm_2.LessThan)(new Date()),
-            },
-        });
-        for (const permit of expiredPermits) {
-            permit.status = construction_permit_entity_1.PermitStatus.EXPIRED;
-            await this.permitRepository.save(permit);
-            await this.landService.update(permit.land.id, { status: land_status_enum_1.LandStatus.REGISTERED }, permit.land.owner);
-        }
-    }
-    async getPendingPermits() {
-        return this.permitRepository.find({
-            where: { status: construction_permit_entity_1.PermitStatus.PENDING },
-            order: { createdAt: 'ASC' },
-        });
-    }
-    async getApprovedPermits() {
-        return this.permitRepository.find({
-            where: { status: construction_permit_entity_1.PermitStatus.APPROVED },
-            order: { approvalDate: 'DESC' },
-        });
+    async updateFeeStatus(id, paid) {
+        const permit = await this.findOne(id);
+        permit.feesPaid = paid;
+        return this.permitRepository.save(permit);
     }
 };
 exports.UrbanizationService = UrbanizationService;
-__decorate([
-    (0, schedule_1.Cron)(schedule_1.CronExpression.EVERY_DAY_AT_MIDNIGHT),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", []),
-    __metadata("design:returntype", Promise)
-], UrbanizationService.prototype, "checkExpiredPermits", null);
 exports.UrbanizationService = UrbanizationService = __decorate([
     (0, common_1.Injectable)(),
     __param(0, (0, typeorm_1.InjectRepository)(construction_permit_entity_1.ConstructionPermit)),
     __metadata("design:paramtypes", [typeorm_2.Repository,
-        land_registration_service_1.LandRegistrationService])
+        land_registration_service_1.LandRegistrationService,
+        notifications_service_1.NotificationsService,
+        users_service_1.UsersService])
 ], UrbanizationService);
 //# sourceMappingURL=urbanization.service.js.map

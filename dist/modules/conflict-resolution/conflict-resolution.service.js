@@ -18,98 +18,130 @@ const typeorm_1 = require("@nestjs/typeorm");
 const typeorm_2 = require("typeorm");
 const land_dispute_entity_1 = require("./entities/land-dispute.entity");
 const land_registration_service_1 = require("../land-registration/land-registration.service");
+const notifications_service_1 = require("../notifications/notifications.service");
+const land_entity_1 = require("../land-registration/entities/land.entity");
 const users_service_1 = require("../users/users.service");
-const land_status_enum_1 = require("../../common/enums/land-status.enum");
 let ConflictResolutionService = class ConflictResolutionService {
     disputeRepository;
     landService;
+    notificationsService;
     usersService;
-    constructor(disputeRepository, landService, usersService) {
+    constructor(disputeRepository, landService, notificationsService, usersService) {
         this.disputeRepository = disputeRepository;
         this.landService = landService;
+        this.notificationsService = notificationsService;
         this.usersService = usersService;
     }
-    async create(createDisputeDto, complainant) {
-        const land = await this.landService.findOne(createDisputeDto.landId);
-        const respondents = await Promise.all(createDisputeDto.respondentIds.map(id => this.usersService.findOne(id)));
-        const existingDispute = await this.disputeRepository.findOne({
-            where: {
-                land: { id: land.id },
-                status: land_dispute_entity_1.DisputeStatus.PENDING,
-            },
-        });
-        if (existingDispute) {
-            throw new common_1.ConflictException('There is already an active dispute for this land');
-        }
+    async create(createDisputeDto) {
+        const [land, complainant, respondents] = await Promise.all([
+            this.landService.findOne(createDisputeDto.landId),
+            this.usersService.findOne(createDisputeDto.complainantId),
+            Promise.all(createDisputeDto.respondentIds.map(id => this.usersService.findOne(id))),
+        ]);
         const dispute = this.disputeRepository.create({
-            ...createDisputeDto,
-            land,
-            complainant,
-            respondents,
             status: land_dispute_entity_1.DisputeStatus.PENDING,
+            type: createDisputeDto.type,
+            description: createDisputeDto.description,
+            evidence: createDisputeDto.evidence || [],
+            requiresFieldVisit: createDisputeDto.requiresFieldVisit || false,
         });
-        await this.landService.update(land.id, { status: land_status_enum_1.LandStatus.UNDER_DISPUTE }, land.owner);
-        return this.disputeRepository.save(dispute);
+        dispute.land = land;
+        dispute.complainant = complainant;
+        dispute.respondents = respondents;
+        const savedDispute = await this.disputeRepository.save(dispute);
+        await this.landService.update(land.id, {
+            status: land_entity_1.LandStatus.UNDER_DISPUTE
+        });
+        await this.notificationsService.sendNotification(savedDispute.complainant.id, notifications_service_1.NotificationType.DISPUTE_FILED, {
+            disputeId: savedDispute.id,
+            landId: land.id,
+            plotNumber: land.plotNumber,
+        });
+        for (const respondent of savedDispute.respondents) {
+            await this.notificationsService.sendNotification(respondent.id, notifications_service_1.NotificationType.DISPUTE_FILED, {
+                disputeId: savedDispute.id,
+                landId: land.id,
+                plotNumber: land.plotNumber,
+                complainant: savedDispute.complainant,
+            });
+        }
+        return savedDispute;
     }
     async findAll() {
-        return this.disputeRepository.find();
+        return this.disputeRepository.find({
+            relations: ['land', 'complainant', 'respondents'],
+        });
     }
     async findOne(id) {
-        const dispute = await this.disputeRepository.findOne({ where: { id } });
+        const dispute = await this.disputeRepository.findOne({
+            where: { id },
+            relations: ['land', 'complainant', 'respondents'],
+        });
         if (!dispute) {
-            throw new common_1.NotFoundException(`Dispute with ID "${id}" not found`);
+            throw new common_1.NotFoundException(`Dispute with ID ${id} not found`);
         }
         return dispute;
     }
-    async findByUser(userId) {
+    async update(id, updateDisputeDto) {
+        const dispute = await this.findOne(id);
+        Object.assign(dispute, updateDisputeDto);
+        return this.disputeRepository.save(dispute);
+    }
+    async remove(id) {
+        const dispute = await this.findOne(id);
+        await this.disputeRepository.remove(dispute);
+    }
+    async resolve(id, resolution) {
+        const dispute = await this.findOne(id);
+        dispute.status = land_dispute_entity_1.DisputeStatus.RESOLVED;
+        dispute.resolution = resolution;
+        dispute.resolvedAt = new Date();
+        await this.landService.update(dispute.land.id, {
+            status: land_entity_1.LandStatus.REGISTERED,
+        });
+        const resolvedDispute = await this.disputeRepository.save(dispute);
+        await this.notificationsService.sendNotification(dispute.complainant.id, notifications_service_1.NotificationType.DISPUTE_RESOLVED, {
+            disputeId: resolvedDispute.id,
+            landId: dispute.land.id,
+            plotNumber: dispute.land.plotNumber,
+            resolution,
+        });
+        for (const respondent of dispute.respondents) {
+            await this.notificationsService.sendNotification(respondent.id, notifications_service_1.NotificationType.DISPUTE_RESOLVED, {
+                disputeId: resolvedDispute.id,
+                landId: dispute.land.id,
+                plotNumber: dispute.land.plotNumber,
+                resolution,
+            });
+        }
+        return resolvedDispute;
+    }
+    async findByStatus(status) {
+        return this.disputeRepository.find({
+            where: { status },
+            relations: ['land', 'complainant', 'respondents'],
+        });
+    }
+    async findByParticipant(userId) {
         return this.disputeRepository.find({
             where: [
                 { complainant: { id: userId } },
                 { respondents: { id: userId } },
             ],
+            relations: ['land', 'complainant', 'respondents'],
         });
-    }
-    async update(id, updateDisputeDto) {
-        const dispute = await this.findOne(id);
-        if (updateDisputeDto.mediatorId) {
-            const mediator = await this.usersService.findOne(updateDisputeDto.mediatorId);
-            dispute.mediator = mediator;
-        }
-        if (updateDisputeDto.status === land_dispute_entity_1.DisputeStatus.RESOLVED) {
-            dispute.resolutionDate = new Date();
-            await this.landService.update(dispute.land.id, { status: land_status_enum_1.LandStatus.REGISTERED }, dispute.land.owner);
-        }
-        Object.assign(dispute, updateDisputeDto);
-        return this.disputeRepository.save(dispute);
     }
     async addComment(id, comment) {
         const dispute = await this.findOne(id);
-        dispute.comments = [...dispute.comments, comment];
+        dispute.comments.push(comment);
         return this.disputeRepository.save(dispute);
     }
-    async scheduleFieldVisit(id, date) {
+    async recordFieldVisit(id, report) {
         const dispute = await this.findOne(id);
         dispute.requiresFieldVisit = true;
-        dispute.fieldVisitDate = date;
-        return this.disputeRepository.save(dispute);
-    }
-    async submitFieldVisitReport(id, report) {
-        const dispute = await this.findOne(id);
+        dispute.fieldVisitDate = new Date();
         dispute.fieldVisitReport = report;
         return this.disputeRepository.save(dispute);
-    }
-    async getActiveDisputes() {
-        return this.disputeRepository.find({
-            where: [
-                { status: land_dispute_entity_1.DisputeStatus.PENDING },
-                { status: land_dispute_entity_1.DisputeStatus.IN_MEDIATION },
-            ],
-        });
-    }
-    async getResolvedDisputes() {
-        return this.disputeRepository.find({
-            where: { status: land_dispute_entity_1.DisputeStatus.RESOLVED },
-        });
     }
 };
 exports.ConflictResolutionService = ConflictResolutionService;
@@ -118,6 +150,7 @@ exports.ConflictResolutionService = ConflictResolutionService = __decorate([
     __param(0, (0, typeorm_1.InjectRepository)(land_dispute_entity_1.LandDispute)),
     __metadata("design:paramtypes", [typeorm_2.Repository,
         land_registration_service_1.LandRegistrationService,
+        notifications_service_1.NotificationsService,
         users_service_1.UsersService])
 ], ConflictResolutionService);
 //# sourceMappingURL=conflict-resolution.service.js.map
