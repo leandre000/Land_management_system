@@ -1,11 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { InjectQueue } from '@nestjs/bull';
-import { Queue } from 'bull';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Inject } from '@nestjs/common';
 import { Cache } from 'cache-manager';
 import { WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
 import { Server } from 'socket.io';
+import { RabbitMQService, RabbitMQEvents } from '../rabbitmq/rabbitmq.service';
 
 export enum NotificationType {
   LAND_REGISTERED = 'land_registered',
@@ -31,8 +30,8 @@ export class NotificationsService {
   server: Server;
 
   constructor(
-    @InjectQueue('notifications') private notificationsQueue: Queue,
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
+    private readonly rabbitMQService: RabbitMQService,
   ) {}
 
   async sendNotification(
@@ -59,8 +58,8 @@ export class NotificationsService {
     // Send real-time notification via WebSocket
     this.server.to(userId).emit('notification', notification);
 
-    // Queue notification for email/SMS processing
-    await this.notificationsQueue.add('send_notification', {
+    // Emit notification event to RabbitMQ for processing
+    await this.rabbitMQService.emit(RabbitMQEvents.USER_NOTIFICATION, {
       ...notification,
       channels: ['email', 'sms']
     });
@@ -121,26 +120,14 @@ export class NotificationsService {
 
     // Emit status update via WebSocket
     this.server.to(`${entityType}:${entityId}`).emit('statusUpdate', statusUpdate);
+
+    // Emit status update event to RabbitMQ
+    await this.rabbitMQService.emit(RabbitMQEvents.STATUS_UPDATE, statusUpdate);
   }
 
   async getStatus(entityType: string, entityId: string): Promise<any> {
     const key = `status:${entityType}:${entityId}`;
     return this.cacheManager.get(key);
-  }
-
-  // Event processing
-  async processEvent(eventType: string, data: any): Promise<void> {
-    const event = {
-      type: eventType,
-      data,
-      timestamp: new Date()
-    };
-
-    // Queue event for processing
-    await this.notificationsQueue.add('process_event', event);
-
-    // Emit event via WebSocket
-    this.server.emit(eventType, event);
   }
 
   // WebSocket room management
