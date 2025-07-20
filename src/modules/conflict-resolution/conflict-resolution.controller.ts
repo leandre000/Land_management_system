@@ -1,96 +1,88 @@
-import { Controller, Get, Post, Body, Patch, Param, UseGuards, Request } from '@nestjs/common';
-import { ApiBearerAuth, ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Request } from '@nestjs/common';
 import { ConflictResolutionService } from './conflict-resolution.service';
 import { CreateDisputeDto } from './dto/create-dispute.dto';
 import { UpdateDisputeDto } from './dto/update-dispute.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { RolesGuard } from '../auth/guards/roles.guard';
-import { Roles } from '../auth/decorators/roles.decorator';
-import { UserRole } from '../../common/enums/user-role.enum';
-import { LandDispute } from './entities/land-dispute.entity';
+import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { DisputeStatus } from './entities/land-dispute.entity';
 
-@ApiTags('conflict-resolution')
+@ApiTags('Conflict Resolution')
 @Controller('conflict-resolution')
-@UseGuards(JwtAuthGuard, RolesGuard)
-@ApiBearerAuth()
+@UseGuards(JwtAuthGuard)
 export class ConflictResolutionController {
   constructor(private readonly conflictResolutionService: ConflictResolutionService) {}
 
-  @Post('disputes')
-  @Roles(UserRole.CITIZEN)
+  @Post()
   @ApiOperation({ summary: 'Create a new land dispute' })
-  @ApiResponse({ status: 201, description: 'Dispute created successfully', type: LandDispute })
-  create(@Body() createDisputeDto: CreateDisputeDto, @Request() req) {
-    return this.conflictResolutionService.create(createDisputeDto, req.user);
+  async create(@Body() createDisputeDto: CreateDisputeDto) {
+    return this.conflictResolutionService.create({
+      ...createDisputeDto,
+    });
   }
 
-  @Get('disputes')
-  @Roles(UserRole.ADMIN, UserRole.LAND_OFFICER)
-  @ApiOperation({ summary: 'Get all disputes' })
-  @ApiResponse({ status: 200, description: 'Return all disputes', type: [LandDispute] })
+  @Get()
+  @ApiOperation({ summary: 'Get all land disputes' })
   findAll() {
     return this.conflictResolutionService.findAll();
   }
 
-  @Get('disputes/active')
-  @Roles(UserRole.ADMIN, UserRole.LAND_OFFICER)
-  @ApiOperation({ summary: 'Get all active disputes' })
-  @ApiResponse({ status: 200, description: 'Return all active disputes', type: [LandDispute] })
+  @Get('active')
+  @ApiOperation({ summary: 'Get active disputes' })
   getActiveDisputes() {
-    return this.conflictResolutionService.getActiveDisputes();
+    return this.conflictResolutionService.findByStatus(DisputeStatus.PENDING);
   }
 
-  @Get('disputes/resolved')
-  @Roles(UserRole.ADMIN, UserRole.LAND_OFFICER)
-  @ApiOperation({ summary: 'Get all resolved disputes' })
-  @ApiResponse({ status: 200, description: 'Return all resolved disputes', type: [LandDispute] })
+  @Get('resolved')
+  @ApiOperation({ summary: 'Get resolved disputes' })
   getResolvedDisputes() {
-    return this.conflictResolutionService.getResolvedDisputes();
+    return this.conflictResolutionService.findByStatus(DisputeStatus.RESOLVED);
   }
 
-  @Get('disputes/my-disputes')
-  @Roles(UserRole.CITIZEN)
-  @ApiOperation({ summary: 'Get user\'s disputes' })
-  @ApiResponse({ status: 200, description: 'Return user\'s disputes', type: [LandDispute] })
-  findMyDisputes(@Request() req) {
-    return this.conflictResolutionService.findByUser(req.user.id);
+  @Get('participant')
+  @ApiOperation({ summary: 'Get disputes by participant' })
+  findByParticipant(@Request() req) {
+    return this.conflictResolutionService.findByParticipant(req.user.id);
   }
 
-  @Get('disputes/:id')
-  @ApiOperation({ summary: 'Get dispute by id' })
-  @ApiResponse({ status: 200, description: 'Return the dispute', type: LandDispute })
+  @Get(':id')
+  @ApiOperation({ summary: 'Get a land dispute by ID' })
   findOne(@Param('id') id: string) {
     return this.conflictResolutionService.findOne(id);
   }
 
-  @Patch('disputes/:id')
-  @Roles(UserRole.LAND_OFFICER)
-  @ApiOperation({ summary: 'Update dispute' })
-  @ApiResponse({ status: 200, description: 'Dispute updated successfully', type: LandDispute })
+  @Patch(':id')
+  @ApiOperation({ summary: 'Update a land dispute' })
   update(@Param('id') id: string, @Body() updateDisputeDto: UpdateDisputeDto) {
     return this.conflictResolutionService.update(id, updateDisputeDto);
   }
 
-  @Post('disputes/:id/comments')
-  @ApiOperation({ summary: 'Add comment to dispute' })
-  @ApiResponse({ status: 200, description: 'Comment added successfully', type: LandDispute })
-  addComment(@Param('id') id: string, @Body('comment') comment: string) {
+  @Delete(':id')
+  @ApiOperation({ summary: 'Delete a land dispute' })
+  remove(@Param('id') id: string) {
+    return this.conflictResolutionService.remove(id);
+  }
+
+  @Post(':id/resolve')
+  @ApiOperation({ summary: 'Resolve a land dispute' })
+  resolve(@Param('id') id: string, @Body('resolution') resolution: string) {
+    return this.conflictResolutionService.resolve(id, resolution);
+  }
+
+  @Post(':id/comments')
+  @ApiOperation({ summary: 'Add a comment to a dispute' })
+  addComment(
+    @Param('id') id: string,
+    @Body('comment') comment: string,
+  ) {
     return this.conflictResolutionService.addComment(id, comment);
   }
 
-  @Post('disputes/:id/field-visit')
-  @Roles(UserRole.LAND_OFFICER)
-  @ApiOperation({ summary: 'Schedule field visit' })
-  @ApiResponse({ status: 200, description: 'Field visit scheduled successfully', type: LandDispute })
-  scheduleFieldVisit(@Param('id') id: string, @Body('date') date: Date) {
-    return this.conflictResolutionService.scheduleFieldVisit(id, date);
-  }
-
-  @Post('disputes/:id/field-visit-report')
-  @Roles(UserRole.LAND_OFFICER)
-  @ApiOperation({ summary: 'Submit field visit report' })
-  @ApiResponse({ status: 200, description: 'Field visit report submitted successfully', type: LandDispute })
-  submitFieldVisitReport(@Param('id') id: string, @Body('report') report: string) {
-    return this.conflictResolutionService.submitFieldVisitReport(id, report);
+  @Post(':id/field-visit')
+  @ApiOperation({ summary: 'Record field visit report' })
+  recordFieldVisit(
+    @Param('id') id: string,
+    @Body('report') report: string,
+  ) {
+    return this.conflictResolutionService.recordFieldVisit(id, report);
   }
 } 

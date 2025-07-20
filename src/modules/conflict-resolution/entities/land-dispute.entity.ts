@@ -1,5 +1,4 @@
-import { Entity, Column, ManyToOne, ManyToMany, JoinTable } from 'typeorm';
-import { BaseEntity } from '../../../common/entities/base.entity';
+import { Entity, Column, ManyToOne, CreateDateColumn, UpdateDateColumn, PrimaryGeneratedColumn } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
 import { Land } from '../../land-registration/entities/land.entity';
 
@@ -7,8 +6,7 @@ export enum DisputeStatus {
   PENDING = 'pending',
   IN_MEDIATION = 'in_mediation',
   RESOLVED = 'resolved',
-  ESCALATED = 'escalated',
-  CLOSED = 'closed',
+  CANCELLED = 'cancelled',
 }
 
 export enum DisputeType {
@@ -19,16 +17,21 @@ export enum DisputeType {
   OTHER = 'other',
 }
 
-@Entity('land_disputes')
-export class LandDispute extends BaseEntity {
+@Entity()
+export class LandDispute {
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
   @ManyToOne(() => Land, { eager: true })
   land: Land;
 
   @ManyToOne(() => User, { eager: true })
   complainant: User;
 
-  @ManyToMany(() => User)
-  @JoinTable()
+  @ManyToOne(() => User, { eager: true, nullable: true })
+  mediator: User;
+
+  @Column('simple-array')
   respondents: User[];
 
   @Column({
@@ -40,6 +43,9 @@ export class LandDispute extends BaseEntity {
   @Column('text')
   description: string;
 
+  @Column('text', { array: true, default: [] })
+  evidence: string[];
+
   @Column({
     type: 'enum',
     enum: DisputeStatus,
@@ -47,33 +53,27 @@ export class LandDispute extends BaseEntity {
   })
   status: DisputeStatus;
 
-  @Column({ type: 'jsonb', nullable: true })
-  evidence: object;
-
-  @Column({ type: 'text', array: true, default: [] })
-  witnesses: string[];
-
-  @ManyToOne(() => User, { nullable: true, eager: true })
-  mediator: User;
-
-  @Column({ type: 'timestamp with time zone', nullable: true })
-  mediationDate: Date;
-
-  @Column({ type: 'text', nullable: true })
+  @Column('text', { nullable: true })
   resolution: string;
 
-  @Column({ type: 'timestamp with time zone', nullable: true })
-  resolutionDate: Date;
+  @Column({ type: 'timestamp', nullable: true })
+  resolvedAt: Date;
 
-  @Column({ type: 'text', array: true, default: [] })
+  @Column('text', { array: true, default: [] })
   comments: string[];
 
-  @Column({ type: 'boolean', default: false })
+  @Column({ default: false })
   requiresFieldVisit: boolean;
 
-  @Column({ type: 'timestamp with time zone', nullable: true })
+  @Column({ type: 'timestamp', nullable: true })
   fieldVisitDate: Date;
 
-  @Column({ type: 'text', nullable: true })
+  @Column('text', { nullable: true })
   fieldVisitReport: string;
+
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @UpdateDateColumn()
+  updatedAt: Date;
 } 
