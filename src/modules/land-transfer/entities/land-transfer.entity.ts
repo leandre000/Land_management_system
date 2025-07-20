@@ -1,24 +1,28 @@
-import { Entity, Column, ManyToOne } from 'typeorm';
-import { BaseEntity } from '../../../common/entities/base.entity';
+import { Entity, Column, ManyToOne, JoinColumn, CreateDateColumn, UpdateDateColumn, PrimaryGeneratedColumn } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
 import { Land } from '../../land-registration/entities/land.entity';
 
 export enum TransferStatus {
-  PENDING = 'pending',
-  APPROVED = 'approved',
-  REJECTED = 'rejected',
-  CANCELLED = 'cancelled',
+  PENDING = 'PENDING',
+  APPROVED = 'APPROVED',
+  REJECTED = 'REJECTED',
 }
 
 @Entity('land_transfers')
-export class LandTransfer extends BaseEntity {
+export class LandTransfer {
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
   @ManyToOne(() => Land, { eager: true })
+  @JoinColumn()
   land: Land;
 
   @ManyToOne(() => User, { eager: true })
+  @JoinColumn()
   fromOwner: User;
 
   @ManyToOne(() => User, { eager: true })
+  @JoinColumn()
   toOwner: User;
 
   @Column({
@@ -31,18 +35,21 @@ export class LandTransfer extends BaseEntity {
   @Column({ type: 'decimal', precision: 10, scale: 2 })
   transferAmount: number;
 
-  @Column({ type: 'jsonb', nullable: true })
-  documents: object;
+  @Column({ type: 'simple-array', nullable: true })
+  documents: string[];
 
-  @Column({ type: 'text', nullable: true })
+  @Column({ nullable: true })
   reason: string;
 
-  @ManyToOne(() => User, { nullable: true, eager: true })
-  approvedBy: User;
+  @Column({ nullable: true })
+  rejectionReason: string;
 
-  @Column({ type: 'timestamp with time zone', nullable: true })
+  @Column({ type: 'timestamp', nullable: true })
   approvalDate: Date;
 
-  @Column({ type: 'text', nullable: true, default: '' })
-  rejectionReason: string = '';
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @UpdateDateColumn()
+  updatedAt: Date;
 } 

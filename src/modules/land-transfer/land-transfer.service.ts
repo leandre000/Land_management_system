@@ -1,13 +1,13 @@
-import { Injectable, NotFoundException, ConflictException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { LandTransfer, TransferStatus } from './entities/land-transfer.entity';
 import { CreateTransferDto } from './dto/create-transfer.dto';
-import { ApproveTransferDto } from './dto/approve-transfer.dto';
-import { User } from '../users/entities/user.entity';
+import { UpdateTransferDto } from './dto/update-transfer.dto';
 import { LandRegistrationService } from '../land-registration/land-registration.service';
+import { NotificationsService, NotificationType } from '../notifications/notifications.service';
 import { UsersService } from '../users/users.service';
-import { LandStatus } from '../../common/enums/land-status.enum';
+import { LandStatus } from '../land-registration/entities/land.entity';
 
 @Injectable()
 export class LandTransferService {
@@ -15,130 +15,195 @@ export class LandTransferService {
     @InjectRepository(LandTransfer)
     private readonly transferRepository: Repository<LandTransfer>,
     private readonly landService: LandRegistrationService,
+    private readonly notificationsService: NotificationsService,
     private readonly usersService: UsersService,
   ) {}
 
-  async create(createTransferDto: CreateTransferDto, fromOwner: User): Promise<LandTransfer> {
-    const land = await this.landService.findOne(createTransferDto.landId);
-    const toOwner = await this.usersService.findOne(createTransferDto.toOwnerId);
+  async create(createTransferDto: CreateTransferDto): Promise<LandTransfer> {
+    const [land, fromOwner, toOwner] = await Promise.all([
+      this.landService.findOne(createTransferDto.landId),
+      this.usersService.findOne(createTransferDto.fromOwnerId),
+      this.usersService.findOne(createTransferDto.toOwnerId),
+    ]);
 
-    // Validate ownership
-    if (land.owner.id !== fromOwner.id) {
-      throw new ConflictException('You do not own this land');
+    if (land.status === LandStatus.UNDER_DISPUTE) {
+      throw new ConflictException('Cannot transfer land that is under dispute');
     }
 
-    // Check if land is registered and verified
-    if (!land.isVerified || land.status !== LandStatus.REGISTERED) {
-      throw new ConflictException('Land must be registered and verified before transfer');
+    if (land.status === LandStatus.PENDING_CONSTRUCTION) {
+      throw new ConflictException('Cannot transfer land with pending construction permit');
     }
 
-    // Check for pending transfers
-    const pendingTransfer = await this.transferRepository.findOne({
-      where: {
-        land: { id: land.id },
-        status: TransferStatus.PENDING,
-      },
-    });
-
-    if (pendingTransfer) {
-      throw new ConflictException('There is already a pending transfer for this land');
-    }
-
+    // Create transfer without saving
     const transfer = this.transferRepository.create({
+      ...createTransferDto,
       land,
       fromOwner,
       toOwner,
-      transferAmount: createTransferDto.transferAmount,
-      documents: createTransferDto.documents,
-      reason: createTransferDto.reason,
       status: TransferStatus.PENDING,
     });
 
-    // Update land status
-    await this.landService.update(land.id, { status: LandStatus.PENDING_TRANSFER }, fromOwner);
+    const savedTransfer = await this.transferRepository.save(transfer);
 
-    return this.transferRepository.save(transfer);
+    // Update land status
+    await this.landService.update(land.id, {
+      status: LandStatus.PENDING_TRANSFER,
+    } as any); // Using type assertion as a temporary fix
+
+    // Send notifications
+    await Promise.all([
+      this.notificationsService.sendNotification(
+        fromOwner.id,
+        NotificationType.TRANSFER_INITIATED,
+        {
+          transferId: savedTransfer.id,
+          landId: land.id,
+          plotNumber: land.plotNumber,
+          toOwnerName: toOwner.fullName,
+        }
+      ),
+      this.notificationsService.sendNotification(
+        toOwner.id,
+        NotificationType.TRANSFER_PENDING_APPROVAL,
+        {
+          transferId: savedTransfer.id,
+          landId: land.id,
+          plotNumber: land.plotNumber,
+          fromOwnerName: fromOwner.fullName,
+        }
+      ),
+    ]);
+
+    return savedTransfer;
   }
 
   async findAll(): Promise<LandTransfer[]> {
-    return this.transferRepository.find();
-  }
-
-  async findOne(id: string): Promise<LandTransfer> {
-    const transfer = await this.transferRepository.findOne({ where: { id } });
-    if (!transfer) {
-      throw new NotFoundException(`Transfer with ID "${id}" not found`);
-    }
-    return transfer;
-  }
-
-  async findByUser(userId: string): Promise<LandTransfer[]> {
     return this.transferRepository.find({
-      where: [
-        { fromOwner: { id: userId } },
-        { toOwner: { id: userId } },
-      ],
+      relations: ['land', 'fromOwner', 'toOwner'],
     });
   }
 
-  async approve(id: string, approveTransferDto: ApproveTransferDto, officer: User): Promise<LandTransfer> {
+  async findOne(id: string): Promise<LandTransfer> {
+    const transfer = await this.transferRepository.findOne({
+      where: { id },
+      relations: ['land', 'fromOwner', 'toOwner'],
+    });
+
+    if (!transfer) {
+      throw new NotFoundException(`Land transfer with ID ${id} not found`);
+    }
+
+    return transfer;
+  }
+
+  async update(id: string, updateTransferDto: UpdateTransferDto): Promise<LandTransfer> {
     const transfer = await this.findOne(id);
 
-    if (transfer.status !== TransferStatus.PENDING) {
-      throw new ConflictException('Transfer is not in pending status');
-    }
-
-    if (!approveTransferDto.approved && !approveTransferDto.rejectionReason) {
-      throw new BadRequestException('Rejection reason is required when rejecting a transfer');
-    }
-
-    transfer.status = approveTransferDto.approved ? TransferStatus.APPROVED : TransferStatus.REJECTED;
-    transfer.approvedBy = officer;
-    transfer.approvalDate = new Date();
-    transfer.rejectionReason = approveTransferDto.rejectionReason || '';
-
-    if (approveTransferDto.approved) {
-      // Update land ownership and status
-      await this.landService.update(
-        transfer.land.id,
-        {
-          owner: transfer.toOwner,
-          status: LandStatus.REGISTERED,
-        },
-        transfer.fromOwner,
-      );
-    } else {
-      // Reset land status
-      await this.landService.update(
-        transfer.land.id,
-        { status: LandStatus.REGISTERED },
-        transfer.fromOwner,
-      );
-    }
+    Object.assign(transfer, updateTransferDto);
 
     return this.transferRepository.save(transfer);
   }
 
-  async cancel(id: string, user: User): Promise<LandTransfer> {
+  async remove(id: string): Promise<void> {
+    const transfer = await this.findOne(id);
+    await this.transferRepository.remove(transfer);
+  }
+
+  async approve(id: string): Promise<LandTransfer> {
     const transfer = await this.findOne(id);
 
-    if (transfer.status !== TransferStatus.PENDING) {
-      throw new ConflictException('Only pending transfers can be cancelled');
-    }
+    transfer.status = TransferStatus.APPROVED;
+    transfer.approvalDate = new Date();
 
-    if (transfer.fromOwner.id !== user.id) {
-      throw new ConflictException('Only the owner can cancel the transfer');
-    }
+    // Update land ownership and status
+    await this.landService.update(transfer.land.id, {
+      ownerId: transfer.toOwner.id,
+      status: LandStatus.REGISTERED,
+    } as any); // Using type assertion as a temporary fix
 
-    transfer.status = TransferStatus.CANCELLED;
+    const approvedTransfer = await this.transferRepository.save(transfer);
 
-    // Reset land status
-    await this.landService.update(
-      transfer.land.id,
-      { status: LandStatus.REGISTERED },
-      user,
-    );
+    // Send notifications
+    await Promise.all([
+      this.notificationsService.sendNotification(
+        transfer.fromOwner.id,
+        NotificationType.TRANSFER_APPROVED,
+        {
+          transferId: approvedTransfer.id,
+          landId: transfer.land.id,
+          plotNumber: transfer.land.plotNumber,
+          toOwnerName: transfer.toOwner.fullName,
+        }
+      ),
+      this.notificationsService.sendNotification(
+        transfer.toOwner.id,
+        NotificationType.TRANSFER_COMPLETED,
+        {
+          transferId: approvedTransfer.id,
+          landId: transfer.land.id,
+          plotNumber: transfer.land.plotNumber,
+          fromOwnerName: transfer.fromOwner.fullName,
+        }
+      ),
+    ]);
 
-    return this.transferRepository.save(transfer);
+    return approvedTransfer;
+  }
+
+  async reject(id: string, reason: string): Promise<LandTransfer> {
+    const transfer = await this.findOne(id);
+
+    transfer.status = TransferStatus.REJECTED;
+    transfer.rejectionReason = reason;
+
+    // Update land status back to registered
+    await this.landService.update(transfer.land.id, {
+      status: LandStatus.REGISTERED,
+    } as any); // Using type assertion as a temporary fix
+
+    const rejectedTransfer = await this.transferRepository.save(transfer);
+
+    // Send notifications
+    await Promise.all([
+      this.notificationsService.sendNotification(
+        transfer.fromOwner.id,
+        NotificationType.TRANSFER_REJECTED,
+        {
+          transferId: rejectedTransfer.id,
+          landId: transfer.land.id,
+          plotNumber: transfer.land.plotNumber,
+          reason,
+        }
+      ),
+      this.notificationsService.sendNotification(
+        transfer.toOwner.id,
+        NotificationType.TRANSFER_REJECTED,
+        {
+          transferId: rejectedTransfer.id,
+          landId: transfer.land.id,
+          plotNumber: transfer.land.plotNumber,
+          reason,
+        }
+      ),
+    ]);
+
+    return rejectedTransfer;
+  }
+
+  async findByStatus(status: TransferStatus): Promise<LandTransfer[]> {
+    return this.transferRepository.find({
+      where: { status },
+      relations: ['land', 'fromOwner', 'toOwner'],
+    });
+  }
+
+  async findByOwner(ownerId: string): Promise<LandTransfer[]> {
+    return this.transferRepository.find({
+      where: [
+        { fromOwner: { id: ownerId } },
+        { toOwner: { id: ownerId } },
+      ],
+      relations: ['land', 'fromOwner', 'toOwner'],
+    });
   }
 } 
