@@ -1,10 +1,11 @@
-import { CacheModuleOptions } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import * as redisStore from 'cache-manager-redis-store';
+import { redisStore } from 'cache-manager-redis-store';
 
-export const redisConfig = (configService: ConfigService): CacheModuleOptions => ({
+export const redisConfig = async (configService: ConfigService) => ({
   store: redisStore,
-  host: configService.get('redis.host'),
-  port: configService.get('redis.port'),
-  ttl: 60 * 60 * 24, // 24 hours
+  host: configService.get('REDIS_HOST', 'localhost'),
+  port: configService.get('REDIS_PORT', 6379),
+  ttl: configService.get('REDIS_TTL', 60 * 60 * 24), // 24 hours
+  max: configService.get('REDIS_MAX_ITEMS', 100),
+  url: configService.get('REDIS_URL'),
 }); 
