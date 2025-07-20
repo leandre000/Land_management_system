@@ -1,26 +1,28 @@
+import { IsString, IsNumber, IsUUID, IsOptional, IsArray } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsNotEmpty, IsString, IsNumber, IsObject, IsOptional, IsUUID } from 'class-validator';
 
 export class CreateTransferDto {
   @ApiProperty({ description: 'ID of the land to transfer' })
   @IsUUID()
-  @IsNotEmpty()
   landId: string;
 
-  @ApiProperty({ description: 'ID of the user to transfer the land to' })
+  @ApiProperty({ description: 'ID of the current owner' })
   @IsUUID()
-  @IsNotEmpty()
+  fromOwnerId: string;
+
+  @ApiProperty({ description: 'ID of the new owner' })
+  @IsUUID()
   toOwnerId: string;
 
   @ApiProperty({ description: 'Transfer amount' })
   @IsNumber()
-  @IsNotEmpty()
   transferAmount: number;
 
-  @ApiPropertyOptional({ description: 'Transfer documents' })
-  @IsObject()
+  @ApiPropertyOptional({ description: 'Supporting documents' })
+  @IsArray()
+  @IsString({ each: true })
   @IsOptional()
-  documents?: object;
+  documents?: string[];
 
   @ApiPropertyOptional({ description: 'Reason for transfer' })
   @IsString()
