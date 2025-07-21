@@ -1,12 +1,7 @@
 import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, BeforeInsert, BeforeUpdate } from 'typeorm';
 import { Exclude } from 'class-transformer';
 import * as bcrypt from 'bcrypt';
-
-export enum UserRole {
-  ADMIN = 'ADMIN',
-  LAND_OFFICER = 'LAND_OFFICER',
-  CITIZEN = 'CITIZEN',
-}
+import {UserRole} from '../../../common/enums/user-role.enum'
 
 @Entity('users')
 export class User {

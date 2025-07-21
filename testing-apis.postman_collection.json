@@ -1,0 +1,2001 @@
+{
+  "info": {
+    "_postman_id": "a1b2c3d4-e5f6-7890-f1e2-d3c4b5a6f7e8",
+    "name": "Land Management System API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Postman collection for testing the Land Management System API endpoints"
+  },
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+{
+  "name": "Login as Admin",
+  "request": {
+    "method": "POST",
+    "header": [],
+    "body": {
+      "mode": "raw",
+      "raw": "{\n    \"email\": \"admin@example.com\",\n    \"password\": \"admin123\"\n}",
+      "options": {
+        "raw": {
+          "language": "json"
+        }
+      }
+    },
+    "url": {
+      "raw": "{{base_url}}/auth/login",
+      "host": ["{{base_url}}"],
+      "path": ["auth", "login"]
+    }
+  },
+  "response": [],
+  "event": [
+    {
+      "listen": "test",
+      "script": {
+        "exec": [
+          "pm.test(\"Status code is 200\", function () {",
+          "    pm.response.to.have.status(200);",
+          "});",
+          "",
+          "pm.test(\"Response has access token\", function () {",
+          "    var jsonData = pm.response.json();",
+          "    pm.expect(jsonData.access_token).to.exist;",
+          "    pm.expect(jsonData.user.role).to.eql(\"ADMIN\");",
+          "    ",
+          "    // Store the token in environment variable",
+          "    pm.environment.set(\"admin_token\", jsonData.access_token);",
+          "    pm.environment.set(\"admin_id\", jsonData.user.id);",
+          "});"
+        ],
+        "type": "text/javascript"
+      }
+    }
+  ]
+},
+{
+  "name": "Login as Land Officer",
+  "request": {
+    "method": "POST",
+    "header": [],
+    "body": {
+      "mode": "raw",
+      "raw": "{\n    \"email\": \"land.officer@example.com\",\n    \"password\": \"land123\"\n}",
+      "options": {
+        "raw": {
+          "language": "json"
+        }
+      }
+    },
+    "url": {
+      "raw": "{{base_url}}/auth/login",
+      "host": ["{{base_url}}"],
+      "path": ["auth", "login"]
+    }
+  },
+  "response": [],
+  "event": [
+    {
+      "listen": "test",
+      "script": {
+        "exec": [
+          "pm.test(\"Status code is 200\", function () {",
+          "    pm.response.to.have.status(200);",
+          "});",
+          "",
+          "pm.test(\"Response has access token\", function () {",
+          "    var jsonData = pm.response.json();",
+          "    pm.expect(jsonData.access_token).to.exist;",
+          "    pm.expect(jsonData.user.role).to.eql(\"LAND_OFFICER\");",
+          "    ",
+          "    // Store the token in environment variable",
+          "    pm.environment.set(\"land_officer_token\", jsonData.access_token);",
+          "    pm.environment.set(\"land_officer_id\", jsonData.user.id);",
+          "});"
+        ],
+        "type": "text/javascript"
+      }
+    }
+  ]
+},
+{
+  "name": "Login as Tax Officer",
+  "request": {
+    "method": "POST",
+    "header": [],
+    "body": {
+      "mode": "raw",
+      "raw": "{\n    \"email\": \"tax.officer@example.com\",\n    \"password\": \"tax123\"\n}",
+      "options": {
+        "raw": {
+          "language": "json"
+        }
+      }
+    },
+    "url": {
+      "raw": "{{base_url}}/auth/login",
+      "host": ["{{base_url}}"],
+      "path": ["auth", "login"]
+    }
+  },
+  "response": [],
+  "event": [
+    {
+      "listen": "test",
+      "script": {
+        "exec": [
+          "pm.test(\"Status code is 200\", function () {",
+          "    pm.response.to.have.status(200);",
+          "});",
+          "",
+          "pm.test(\"Response has access token\", function () {",
+          "    var jsonData = pm.response.json();",
+          "    pm.expect(jsonData.access_token).to.exist;",
+          "    pm.expect(jsonData.user.role).to.eql(\"TAX_OFFICER\");",
+          "    ",
+          "    // Store the token in environment variable",
+          "    pm.environment.set(\"tax_officer_token\", jsonData.access_token);",
+          "    pm.environment.set(\"tax_officer_id\", jsonData.user.id);",
+          "});"
+        ],
+        "type": "text/javascript"
+      }
+    }
+  ]
+},
+{
+  "name": "Login as Construction Officer",
+  "request": {
+    "method": "POST",
+    "header": [],
+    "body": {
+      "mode": "raw",
+      "raw": "{\n    \"email\": \"construction.officer@example.com\",\n    \"password\": \"construct123\"\n}",
+      "options": {
+        "raw": {
+          "language": "json"
+        }
+      }
+    },
+    "url": {
+      "raw": "{{base_url}}/auth/login",
+      "host": ["{{base_url}}"],
+      "path": ["auth", "login"]
+    }
+  },
+  "response": [],
+  "event": [
+    {
+      "listen": "test",
+      "script": {
+        "exec": [
+          "pm.test(\"Status code is 200\", function () {",
+          "    pm.response.to.have.status(200);",
+          "});",
+          "",
+          "pm.test(\"Response has access token\", function () {",
+          "    var jsonData = pm.response.json();",
+          "    pm.expect(jsonData.access_token).to.exist;",
+          "    pm.expect(jsonData.user.role).to.eql(\"CONSTRUCTION_OFFICER\");",
+          "    ",
+          "    // Store the token in environment variable",
+          "    pm.environment.set(\"construction_officer_token\", jsonData.access_token);",
+          "    pm.environment.set(\"construction_officer_id\", jsonData.user.id);",
+          "});"
+        ],
+        "type": "text/javascript"
+      }
+    }
+  ]
+},
+{
+  "name": "Login as Citizen",
+  "request": {
+    "method": "POST",
+    "header": [],
+    "body": {
+      "mode": "raw",
+      "raw": "{\n    \"email\": \"citizen@example.com\",\n    \"password\": \"citizen123\"\n}",
+      "options": {
+        "raw": {
+          "language": "json"
+        }
+      }
+    },
+    "url": {
+      "raw": "{{base_url}}/auth/login",
+      "host": ["{{base_url}}"],
+      "path": ["auth", "login"]
+    }
+  },
+  "response": [],
+  "event": [
+    {
+      "listen": "test",
+      "script": {
+        "exec": [
+          "pm.test(\"Status code is 200\", function () {",
+          "    pm.response.to.have.status(200);",
+          "});",
+          "",
+          "pm.test(\"Response has access token\", function () {",
+          "    var jsonData = pm.response.json();",
+          "    pm.expect(jsonData.access_token).to.exist;",
+          "    pm.expect(jsonData.user.role).to.eql(\"CITIZEN\");",
+          "    ",
+          "    // Store the token in environment variable",
+          "    pm.environment.set(\"citizen_token\", jsonData.access_token);",
+          "    pm.environment.set(\"citizen_id\", jsonData.user.id);",
+          "});"
+        ],
+        "type": "text/javascript"
+      }
+    }
+  ]
+}
+      ]
+    },
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "Create User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"firstName\": \"Test\",\n    \"lastName\": \"User\",\n    \"email\": \"test.user@example.com\",\n    \"password\": \"test1234\",\n    \"phoneNumber\": \"+1234567890\",\n    \"address\": \"123 Test Street\",\n    \"role\": \"CITIZEN\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/users",
+              "host": ["{{base_url}}"],
+              "path": ["users"]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 201\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test(\"User created successfully\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.id).to.exist;",
+                  "    pm.expect(jsonData.email).to.eql(\"test.user@example.com\");",
+                  "    ",
+                  "    // Store the created user ID for later use",
+                  "    pm.environment.set(\"test_user_id\", jsonData.id);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+  "name": "Create Admin User",
+  "request": {
+    "method": "POST",
+    "header": [],
+    "body": {
+      "mode": "raw",
+      "raw": "{\n    \"firstName\": \"Admin\",\n    \"lastName\": \"User\",\n    \"email\": \"admin@example.com\",\n    \"password\": \"admin123\",\n    \"role\": \"ADMIN\"\n}",
+      "options": {
+        "raw": {
+          "language": "json"
+        }
+      }
+    },
+    "url": {
+      "raw": "{{base_url}}/users",
+      "host": ["{{base_url}}"],
+      "path": ["users"]
+    }
+  },
+  "response": []
+},
+{
+  "name": "Create Land Officer",
+  "request": {
+    "method": "POST",
+    "header": [],
+    "body": {
+      "mode": "raw",
+      "raw": "{\n    \"firstName\": \"Land\",\n    \"lastName\": \"Officer\",\n    \"email\": \"land.officer@example.com\",\n    \"password\": \"land123\",\n    \"role\": \"LAND_OFFICER\"\n}",
+      "options": {
+        "raw": {
+          "language": "json"
+        }
+      }
+    },
+    "url": {
+      "raw": "{{base_url}}/users",
+      "host": ["{{base_url}}"],
+      "path": ["users"]
+    }
+  },
+  "response": []
+},
+{
+  "name": "Create Tax Officer",
+  "request": {
+    "method": "POST",
+    "header": [],
+    "body": {
+      "mode": "raw",
+      "raw": "{\n    \"firstName\": \"Tax\",\n    \"lastName\": \"Officer\",\n    \"email\": \"tax.officer@example.com\",\n    \"password\": \"tax123\",\n    \"role\": \"TAX_OFFICER\"\n}",
+      "options": {
+        "raw": {
+          "language": "json"
+        }
+      }
+    },
+    "url": {
+      "raw": "{{base_url}}/users",
+      "host": ["{{base_url}}"],
+      "path": ["users"]
+    }
+  },
+  "response": []
+},
+{
+  "name": "Create Construction Officer",
+  "request": {
+    "method": "POST",
+    "header": [],
+    "body": {
+      "mode": "raw",
+      "raw": "{\n    \"firstName\": \"Construction\",\n    \"lastName\": \"Officer\",\n    \"email\": \"construction.officer@example.com\",\n    \"password\": \"construct123\",\n    \"role\": \"CONSTRUCTION_OFFICER\"\n}",
+      "options": {
+        "raw": {
+          "language": "json"
+        }
+      }
+    },
+    "url": {
+      "raw": "{{base_url}}/users",
+      "host": ["{{base_url}}"],
+      "path": ["users"]
+    }
+  },
+  "response": []
+},
+{
+  "name": "Create Citizen User",
+  "request": {
+    "method": "POST",
+    "header": [],
+    "body": {
+      "mode": "raw",
+      "raw": "{\n    \"firstName\": \"Regular\",\n    \"lastName\": \"Citizen\",\n    \"email\": \"citizen@example.com\",\n    \"password\": \"citizen123\"\n}",
+      "options": {
+        "raw": {
+          "language": "json"
+        }
+      }
+    },
+    "url": {
+      "raw": "{{base_url}}/users",
+      "host": ["{{base_url}}"],
+      "path": ["users"]
+    }
+  },
+  "response": []
+},
+        {
+          "name": "Get All Users",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/users",
+              "host": ["{{base_url}}"],
+              "path": ["users"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get User by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/users/{{test_user_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["users", "{{test_user_id}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update User",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"firstName\": \"Updated\",\n    \"lastName\": \"User\",\n    \"phoneNumber\": \"+9876543210\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/users/{{test_user_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["users", "{{test_user_id}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete User",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/users/{{test_user_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["users", "{{test_user_id}}"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Land Registration",
+      "item": [
+        {
+          "name": "Register Land",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"plotNumber\": \"PLOT-001\",\n    \"location\": {\n        \"latitude\": -1.2921,\n        \"longitude\": 36.8219,\n        \"address\": \"Nairobi, Kenya\"\n    },\n    \"area\": 1000,\n    \"title\": \"Residential Plot\",\n    \"boundaries\": [\"North: River\", \"South: Road\", \"East: Fence\", \"West: Tree\"],\n    \"description\": \"Prime residential plot in Nairobi\",\n    \"documents\": {\n        \"survey\": \"survey_doc_123\",\n        \"title_deed\": \"title_deed_456\"\n    },\n    \"value\": 5000000\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/land-registration",
+              "host": ["{{base_url}}"],
+              "path": ["land-registration"]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 201\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test(\"Land registered successfully\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.id).to.exist;",
+                  "    pm.expect(jsonData.plotNumber).to.eql(\"PLOT-001\");",
+                  "    ",
+                  "    // Store the land ID for later use",
+                  "    pm.environment.set(\"land_id\", jsonData.id);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get All Lands",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/land-registration",
+              "host": ["{{base_url}}"],
+              "path": ["land-registration"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get My Lands",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/land-registration/my-lands",
+              "host": ["{{base_url}}"],
+              "path": ["land-registration", "my-lands"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Land by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/land-registration/{{land_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["land-registration", "{{land_id}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Land",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"description\": \"Updated description for the plot\",\n    \"value\": 5500000\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/land-registration/{{land_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["land-registration", "{{land_id}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Verify Land",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/land-registration/{{land_id}}/verify",
+              "host": ["{{base_url}}"],
+              "path": ["land-registration", "{{land_id}}", "verify"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Land",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/land-registration/{{land_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["land-registration", "{{land_id}}"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Land Transfer",
+      "item": [
+        {
+          "name": "Initiate Transfer",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"landId\": \"{{land_id}}\",\n    \"fromOwnerId\": \"{{current_user_id}}\",\n    \"toOwnerId\": \"{{test_user_id}}\",\n    \"transferAmount\": 5500000,\n    \"documents\": [\"sale_agreement_123\"],\n    \"reason\": \"Sale of property\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/land-transfer",
+              "host": ["{{base_url}}"],
+              "path": ["land-transfer"]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 201\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test(\"Transfer initiated successfully\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.id).to.exist;",
+                  "    pm.expect(jsonData.status).to.eql(\"PENDING\");",
+                  "    ",
+                  "    // Store the transfer ID for later use",
+                  "    pm.environment.set(\"transfer_id\", jsonData.id);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get All Transfers",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/land-transfer",
+              "host": ["{{base_url}}"],
+              "path": ["land-transfer"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get My Transfers",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/land-transfer/my-transfers",
+              "host": ["{{base_url}}"],
+              "path": ["land-transfer", "my-transfers"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Transfer by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/land-transfer/{{transfer_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["land-transfer", "{{transfer_id}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Approve Transfer",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/land-transfer/{{transfer_id}}/approve",
+              "host": ["{{base_url}}"],
+              "path": ["land-transfer", "{{transfer_id}}", "approve"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Reject Transfer",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"reason\": \"Incomplete documentation\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/land-transfer/{{transfer_id}}/reject",
+              "host": ["{{base_url}}"],
+              "path": ["land-transfer", "{{transfer_id}}", "reject"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Transfer",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/land-transfer/{{transfer_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["land-transfer", "{{transfer_id}}"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Land Taxes",
+      "item": [
+        {
+          "name": "Create Tax Assessment",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"landId\": \"{{land_id}}\",\n    \"assessedValue\": 5500000,\n    \"taxRate\": 1.5,\n    \"dueDate\": \"2023-12-31\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/land-taxes/assessments",
+              "host": ["{{base_url}}"],
+              "path": ["land-taxes", "assessments"]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 201\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test(\"Tax assessment created successfully\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.id).to.exist;",
+                  "    pm.expect(jsonData.taxAmount).to.eql(82500);",
+                  "    ",
+                  "    // Store the assessment ID for later use",
+                  "    pm.environment.set(\"assessment_id\", jsonData.id);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get All Assessments",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/land-taxes/assessments",
+              "host": ["{{base_url}}"],
+              "path": ["land-taxes", "assessments"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Overdue Taxes",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/land-taxes/assessments/overdue",
+              "host": ["{{base_url}}"],
+              "path": ["land-taxes", "assessments", "overdue"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get My Taxes",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/land-taxes/assessments/my-taxes",
+              "host": ["{{base_url}}"],
+              "path": ["land-taxes", "assessments", "my-taxes"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Assessment by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/land-taxes/assessments/{{assessment_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["land-taxes", "assessments", "{{assessment_id}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Assessments by Land",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/land-taxes/assessments/land/{{land_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["land-taxes", "assessments", "land", "{{land_id}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Record Payment",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"amount\": 82500,\n    \"paymentDetails\": {\n        \"transactionId\": \"PAY123456\",\n        \"method\": \"MPESA\",\n        \"date\": \"2023-06-15\"\n    },\n    \"notes\": \"Full payment of land tax\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/land-taxes/assessments/{{assessment_id}}/payments",
+              "host": ["{{base_url}}"],
+              "path": ["land-taxes", "assessments", "{{assessment_id}}", "payments"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Conflict Resolution",
+      "item": [
+        {
+          "name": "Create Dispute",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"landId\": \"{{land_id}}\",\n    \"complainantId\": \"{{current_user_id}}\",\n    \"respondentIds\": [\"{{test_user_id}}\"],\n    \"type\": \"BOUNDARY\",\n    \"description\": \"Boundary dispute with neighbor\",\n    \"evidence\": [\"survey_report.pdf\", \"photos.zip\"],\n    \"requiresFieldVisit\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/conflict-resolution",
+              "host": ["{{base_url}}"],
+              "path": ["conflict-resolution"]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 201\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test(\"Dispute created successfully\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.id).to.exist;",
+                  "    pm.expect(jsonData.status).to.eql(\"PENDING\");",
+                  "    ",
+                  "    // Store the dispute ID for later use",
+                  "    pm.environment.set(\"dispute_id\", jsonData.id);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get All Disputes",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/conflict-resolution",
+              "host": ["{{base_url}}"],
+              "path": ["conflict-resolution"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Active Disputes",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/conflict-resolution/active",
+              "host": ["{{base_url}}"],
+              "path": ["conflict-resolution", "active"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Resolved Disputes",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/conflict-resolution/resolved",
+              "host": ["{{base_url}}"],
+              "path": ["conflict-resolution", "resolved"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Disputes by Participant",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/conflict-resolution/participant",
+              "host": ["{{base_url}}"],
+              "path": ["conflict-resolution", "participant"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Dispute by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/conflict-resolution/{{dispute_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["conflict-resolution", "{{dispute_id}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Dispute",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"status\": \"IN_MEDIATION\",\n    \"mediatorId\": \"{{current_user_id}}\",\n    \"mediationDate\": \"2023-06-20\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/conflict-resolution/{{dispute_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["conflict-resolution", "{{dispute_id}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Resolve Dispute",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"resolution\": \"Boundary adjusted as per survey report\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/conflict-resolution/{{dispute_id}}/resolve",
+              "host": ["{{base_url}}"],
+              "path": ["conflict-resolution", "{{dispute_id}}", "resolve"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Add Comment",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"comment\": \"New evidence submitted\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/conflict-resolution/{{dispute_id}}/comments",
+              "host": ["{{base_url}}"],
+              "path": ["conflict-resolution", "{{dispute_id}}", "comments"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Record Field Visit",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"report\": \"Field visit conducted on 2023-06-18. Found boundary markers as described in survey report.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/conflict-resolution/{{dispute_id}}/field-visit",
+              "host": ["{{base_url}}"],
+              "path": ["conflict-resolution", "{{dispute_id}}", "field-visit"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Dispute",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/conflict-resolution/{{dispute_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["conflict-resolution", "{{dispute_id}}"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Urbanization",
+      "item": [
+        {
+          "name": "Apply for Construction Permit",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"landId\": \"{{land_id}}\",\n    \"applicantId\": \"{{current_user_id}}\",\n    \"constructionType\": \"RESIDENTIAL\",\n    \"projectDescription\": \"Construction of a 3-bedroom residential house\",\n    \"estimatedCost\": 3000000,\n    \"documents\": [\"architectural_plan.pdf\", \"structural_design.pdf\"]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/urbanization",
+              "host": ["{{base_url}}"],
+              "path": ["urbanization"]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 201\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test(\"Permit application submitted successfully\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.id).to.exist;",
+                  "    pm.expect(jsonData.status).to.eql(\"PENDING\");",
+                  "    ",
+                  "    // Store the permit ID for later use",
+                  "    pm.environment.set(\"permit_id\", jsonData.id);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get All Permits",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/urbanization",
+              "host": ["{{base_url}}"],
+              "path": ["urbanization"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Pending Permits",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/urbanization/pending",
+              "host": ["{{base_url}}"],
+              "path": ["urbanization", "pending"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Approved Permits",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/urbanization/approved",
+              "host": ["{{base_url}}"],
+              "path": ["urbanization", "approved"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Permits by Applicant",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/urbanization/applicant",
+              "host": ["{{base_url}}"],
+              "path": ["urbanization", "applicant"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Permit by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/urbanization/{{permit_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["urbanization", "{{permit_id}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Permit",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"projectDescription\": \"Updated description: Construction of a 4-bedroom residential house with garage\",\n    \"estimatedCost\": 3500000\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/urbanization/{{permit_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["urbanization", "{{permit_id}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Approve Permit",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/urbanization/{{permit_id}}/approve",
+              "host": ["{{base_url}}"],
+              "path": ["urbanization", "{{permit_id}}", "approve"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Reject Permit",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"reason\": \"Incomplete documentation\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/urbanization/{{permit_id}}/reject",
+              "host": ["{{base_url}}"],
+              "path": ["urbanization", "{{permit_id}}", "reject"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Record Inspection",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"report\": \"Site inspection conducted on 2023-06-25. Found all documents in order.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/urbanization/{{permit_id}}/inspection",
+              "host": ["{{base_url}}"],
+              "path": ["urbanization", "{{permit_id}}", "inspection"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Fee Status",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"paid\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/urbanization/{{permit_id}}/fees",
+              "host": ["{{base_url}}"],
+              "path": ["urbanization", "{{permit_id}}", "fees"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Permit",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/urbanization/{{permit_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["urbanization", "{{permit_id}}"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Notifications",
+      "item": [
+        {
+          "name": "Get User Notifications",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/notifications",
+              "host": ["{{base_url}}"],
+              "path": ["notifications"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Unread Notifications",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/notifications/unread",
+              "host": ["{{base_url}}"],
+              "path": ["notifications", "unread"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Mark Notification as Read",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/notifications/{{notification_id}}/read",
+              "host": ["{{base_url}}"],
+              "path": ["notifications", "{{notification_id}}", "read"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Mark All Notifications as Read",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/notifications/read-all",
+              "host": ["{{base_url}}"],
+              "path": ["notifications", "read-all"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Entity Status",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/notifications/status/land/{{land_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["notifications", "status", "land", "{{land_id}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Subscribe to Entity Updates",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/notifications/subscribe/land/{{land_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["notifications", "subscribe", "land", "{{land_id}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Unsubscribe from Entity Updates",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/notifications/unsubscribe/land/{{land_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["notifications", "unsubscribe", "land", "{{land_id}}"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Settings",
+      "item": [
+        {
+          "name": "Create Setting",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"type\": \"TAX_RATE\",\n    \"key\": \"residential_tax_rate\",\n    \"value\": 1.5,\n    \"description\": \"Tax rate for residential properties\",\n    \"isActive\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/settings",
+              "host": ["{{base_url}}"],
+              "path": ["settings"]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 201\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test(\"Setting created successfully\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.id).to.exist;",
+                  "    pm.expect(jsonData.key).to.eql(\"residential_tax_rate\");",
+                  "    ",
+                  "    // Store the setting ID for later use",
+                  "    pm.environment.set(\"setting_id\", jsonData.id);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get All Settings",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/settings",
+              "host": ["{{base_url}}"],
+              "path": ["settings"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Active Settings",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/settings/active",
+              "host": ["{{base_url}}"],
+              "path": ["settings", "active"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Settings by Type",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/settings/type/TAX_RATE",
+              "host": ["{{base_url}}"],
+              "path": ["settings", "type", "TAX_RATE"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Setting by Key",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/settings/key/residential_tax_rate",
+              "host": ["{{base_url}}"],
+              "path": ["settings", "key", "residential_tax_rate"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Setting by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/settings/{{setting_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["settings", "{{setting_id}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Setting",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"value\": 1.75,\n    \"description\": \"Updated tax rate for residential properties\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/settings/{{setting_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["settings", "{{setting_id}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Bulk Update Settings",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "[\n    {\n        \"key\": \"residential_tax_rate\",\n        \"value\": 1.8,\n        \"description\": \"Final tax rate adjustment\"\n    }\n]",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/settings/bulk-update",
+              "host": ["{{base_url}}"],
+              "path": ["settings", "bulk-update"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Setting Value",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/settings/value/TAX_RATE/residential_tax_rate",
+              "host": ["{{base_url}}"],
+              "path": ["settings", "value", "TAX_RATE", "residential_tax_rate"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Setting",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/settings/{{setting_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["settings", "{{setting_id}}"]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Set the base URL based on environment",
+          "if (!pm.environment.get(\"base_url\")) {",
+          "    pm.environment.set(\"base_url\", \"http://localhost:3000\");",
+          "}"
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Common test to verify response is JSON",
+          "pm.test(\"Response is JSON\", function () {",
+          "    pm.response.to.be.json;",
+          "});"
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:3000"
+    },
+    {
+      "key": "access_token",
+      "value": ""
+    },
+    {
+      "key": "admin_email",
+      "value": "admin@example.com"
+    },
+    {
+      "key": "admin_password",
+      "value": "admin123"
+    },
+    {
+      "key": "current_user_id",
+      "value": ""
+    },
+    {
+      "key": "test_user_id",
+      "value": ""
+    },
+    {
+      "key": "land_id",
+      "value": ""
+    },
+    {
+      "key": "transfer_id",
+      "value": ""
+    },
+    {
+      "key": "assessment_id",
+      "value": ""
+    },
+    {
+      "key": "dispute_id",
+      "value": ""
+    },
+    {
+      "key": "permit_id",
+      "value": ""
+    },
+    {
+      "key": "notification_id",
+      "value": ""
+    },
+    {
+      "key": "setting_id",
+      "value": ""
+    }
+  ]
+}
