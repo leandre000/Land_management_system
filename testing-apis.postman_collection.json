@@ -44,9 +44,11 @@
           "    pm.expect(jsonData.access_token).to.exist;",
           "    pm.expect(jsonData.user.role).to.eql(\"ADMIN\");",
           "    ",
-          "    // Store the token in environment variable",
+          "    // Store both the generic access_token and admin-specific token",
+          "    pm.environment.set(\"access_token\", jsonData.access_token);",
           "    pm.environment.set(\"admin_token\", jsonData.access_token);",
           "    pm.environment.set(\"admin_id\", jsonData.user.id);",
+          "    pm.environment.set(\"current_user_id\", jsonData.user.id);",
           "});"
         ],
         "type": "text/javascript"
@@ -234,82 +236,82 @@
     }
   ]
 }
-      ]
+ ]
     },
     {
       "name": "Users",
       "item": [
-        {
-          "name": "Create User",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"firstName\": \"Test\",\n    \"lastName\": \"User\",\n    \"email\": \"test.user@example.com\",\n    \"password\": \"test1234\",\n    \"phoneNumber\": \"+1234567890\",\n    \"address\": \"123 Test Street\",\n    \"role\": \"CITIZEN\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{base_url}}/users",
-              "host": ["{{base_url}}"],
-              "path": ["users"]
+   {
+      "name": "Create New User (Admin Only)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{admin_token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"firstName\": \"Test\",\n    \"lastName\": \"User\",\n    \"email\": \"test.user@example.com\",\n    \"password\": \"test1234\",\n    \"phoneNumber\": \"+1234567890\",\n    \"address\": \"123 Test Street\",\n    \"role\": \"CITIZEN\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
             }
-          },
-          "response": [],
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test(\"Status code is 201\", function () {",
-                  "    pm.response.to.have.status(201);",
-                  "});",
-                  "",
-                  "pm.test(\"User created successfully\", function () {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData.id).to.exist;",
-                  "    pm.expect(jsonData.email).to.eql(\"test.user@example.com\");",
-                  "    ",
-                  "    // Store the created user ID for later use",
-                  "    pm.environment.set(\"test_user_id\", jsonData.id);",
-                  "});"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ]
+          }
         },
-        {
-  "name": "Create Admin User",
-  "request": {
-    "method": "POST",
-    "header": [],
-    "body": {
-      "mode": "raw",
-      "raw": "{\n    \"firstName\": \"Admin\",\n    \"lastName\": \"User\",\n    \"email\": \"admin@example.com\",\n    \"password\": \"admin123\",\n    \"role\": \"ADMIN\"\n}",
-      "options": {
-        "raw": {
-          "language": "json"
+        "url": {
+          "raw": "{{base_url}}/users",
+          "host": ["{{base_url}}"],
+          "path": ["users"]
         }
-      }
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 201\", function () {",
+              "    pm.response.to.have.status(201);",
+              "});",
+              "",
+              "pm.test(\"User created successfully\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.id).to.exist;",
+              "    pm.expect(jsonData.email).to.eql(\"test.user@example.com\");",
+              "    ",
+              "    // Store the created user ID for later use",
+              "    pm.environment.set(\"test_user_id\", jsonData.id);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
     },
-    "url": {
-      "raw": "{{base_url}}/users",
-      "host": ["{{base_url}}"],
-      "path": ["users"]
-    }
-  },
-  "response": []
-},
+ {
+      "name": "Create Admin User (Initial Setup)",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"firstName\": \"System\",\n    \"lastName\": \"Admin\",\n    \"email\": \"admin@example.com\",\n    \"password\": \"admin123\",\n    \"role\": \"ADMIN\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/users",
+          "host": ["{{base_url}}"],
+          "path": ["users"]
+        }
+      },
+      "response": []
+    },
 {
   "name": "Create Land Officer",
   "request": {
@@ -398,87 +400,87 @@
   },
   "response": []
 },
-        {
-          "name": "Get All Users",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/users",
-              "host": ["{{base_url}}"],
-              "path": ["users"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Get User by ID",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/users/{{test_user_id}}",
-              "host": ["{{base_url}}"],
-              "path": ["users", "{{test_user_id}}"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Update User",
-          "request": {
-            "method": "PATCH",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"firstName\": \"Updated\",\n    \"lastName\": \"User\",\n    \"phoneNumber\": \"+9876543210\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{base_url}}/users/{{test_user_id}}",
-              "host": ["{{base_url}}"],
-              "path": ["users", "{{test_user_id}}"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Delete User",
-          "request": {
-            "method": "DELETE",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/users/{{test_user_id}}",
-              "host": ["{{base_url}}"],
-              "path": ["users", "{{test_user_id}}"]
-            }
-          },
-          "response": []
+    {
+      "name": "Get All Users (Admin Only)",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{admin_token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/users",
+          "host": ["{{base_url}}"],
+          "path": ["users"]
         }
+      },
+      "response": []
+    },
+    {
+      "name": "Get User by ID (Admin Only)",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{admin_token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/users/{{test_user_id}}",
+          "host": ["{{base_url}}"],
+          "path": ["users", "{{test_user_id}}"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Update User (Admin Only)",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{admin_token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"firstName\": \"Updated\",\n    \"lastName\": \"User\",\n    \"phoneNumber\": \"+9876543210\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/users/{{test_user_id}}",
+          "host": ["{{base_url}}"],
+          "path": ["users", "{{test_user_id}}"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Delete User (Admin Only)",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{admin_token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/users/{{test_user_id}}",
+          "host": ["{{base_url}}"],
+          "path": ["users", "{{test_user_id}}"]
+        }
+      },
+      "response": []
+    }
       ]
     },
     {
