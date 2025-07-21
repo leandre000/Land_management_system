@@ -9,16 +9,11 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.User = exports.UserRole = void 0;
+exports.User = void 0;
 const typeorm_1 = require("typeorm");
 const class_transformer_1 = require("class-transformer");
 const bcrypt = require("bcrypt");
-var UserRole;
-(function (UserRole) {
-    UserRole["ADMIN"] = "ADMIN";
-    UserRole["LAND_OFFICER"] = "LAND_OFFICER";
-    UserRole["CITIZEN"] = "CITIZEN";
-})(UserRole || (exports.UserRole = UserRole = {}));
+const user_role_enum_1 = require("../../../common/enums/user-role.enum");
 let User = class User {
     id;
     firstName;
@@ -76,8 +71,8 @@ __decorate([
 __decorate([
     (0, typeorm_1.Column)({
         type: 'enum',
-        enum: UserRole,
-        default: UserRole.CITIZEN
+        enum: user_role_enum_1.UserRole,
+        default: user_role_enum_1.UserRole.CITIZEN
     }),
     __metadata("design:type", String)
 ], User.prototype, "role", void 0);

@@ -17,6 +17,7 @@ const common_1 = require("@nestjs/common");
 const typeorm_1 = require("@nestjs/typeorm");
 const typeorm_2 = require("typeorm");
 const user_entity_1 = require("./entities/user.entity");
+const user_role_enum_1 = require("../../common/enums/user-role.enum");
 let UsersService = class UsersService {
     usersRepository;
     constructor(usersRepository) {
@@ -26,7 +27,7 @@ let UsersService = class UsersService {
         const user = new user_entity_1.User();
         Object.assign(user, {
             ...createUserDto,
-            role: createUserDto.role || user_entity_1.UserRole.CITIZEN,
+            role: createUserDto.role || user_role_enum_1.UserRole.CITIZEN,
         });
         return this.usersRepository.save(user);
     }

@@ -1,8 +1,4 @@
-export declare enum UserRole {
-    ADMIN = "ADMIN",
-    LAND_OFFICER = "LAND_OFFICER",
-    CITIZEN = "CITIZEN"
-}
+import { UserRole } from '../../../common/enums/user-role.enum';
 export declare class User {
     id: string;
     firstName: string;

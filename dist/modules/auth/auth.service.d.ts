@@ -13,7 +13,7 @@ export declare class AuthService {
             email: string;
             firstName: string;
             lastName: string;
-            role: import("../users/entities/user.entity").UserRole;
+            role: import("../../common/enums/user-role.enum").UserRole;
         };
     }>;
 }
