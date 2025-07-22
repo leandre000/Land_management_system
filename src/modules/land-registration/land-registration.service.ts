@@ -20,7 +20,12 @@ async create(createLandDto: CreateLandDto): Promise<Land> {
   const owner = await this.usersService.findOne(createLandDto.ownerId);
 
   const { latitude, longitude, address } = createLandDto;
-  const coordinates = `POINT(${longitude} ${latitude})`; // WKT format
+
+
+  const coordinates = {
+    type: 'Point',
+    coordinates: [longitude, latitude],
+  };
 
   const land = this.landRepository.create({
     ...createLandDto,
@@ -35,6 +40,7 @@ async create(createLandDto: CreateLandDto): Promise<Land> {
 
   return savedLand;
 }
+
 
   async findAll(): Promise<Land[]> {
     return this.landRepository.find({

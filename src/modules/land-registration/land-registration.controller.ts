@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, Delete, Put, UseGuards, Req } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Delete, Put, UseGuards, Req, Query } from '@nestjs/common';
 import { LandRegistrationService } from './land-registration.service';
 import { CreateLandDto } from './dto/create-land.dto';
 import { UpdateLandDto } from './dto/update-land.dto';
@@ -9,7 +9,7 @@ import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 @Controller('land-registration')
 @UseGuards(JwtAuthGuard)
 export class LandRegistrationController {
-  constructor(private readonly landRegistrationService: LandRegistrationService) {}
+  constructor(private readonly landRegistrationService: LandRegistrationService) { }
 
   @Post()
   @ApiOperation({ summary: 'Register a new land' })
@@ -28,13 +28,21 @@ export class LandRegistrationController {
     return this.landRegistrationService.findAll();
   }
 
+  @Get('nearby')
+  @ApiOperation({ summary: 'Get nearby lands' })
+  @ApiResponse({ status: 200, description: 'Return nearby lands using postGIS spartial coordinates' })
+  findNearby(@Query('lat') lat: number, @Query('lng') lng: number, @Query('radius') radius: number) {
+    return this.landRegistrationService.findNearby(+lat, +lng, +radius || 1000);
+  }
+
+
   @Get('my-lands')
   @ApiOperation({ summary: 'Get all lands owned by the current user' })
   @ApiResponse({ status: 200, description: 'Return all lands owned by the current user.' })
   findMyLands(@Req() req: any) {
     return this.landRegistrationService.findByOwner(req.user.id);
   }
-  
+
 
   @Get(':id')
   @ApiOperation({ summary: 'Get a specific land' })
