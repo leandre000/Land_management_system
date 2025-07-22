@@ -1,49 +1,52 @@
-import { IsString, IsNumber, IsUUID, IsObject, IsOptional, IsArray } from 'class-validator';
+import { IsString, IsNumber, IsUUID, IsOptional, IsArray } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class CreateLandDto {
-  @ApiProperty({ description: 'ID of the land owner' })
+  @ApiProperty()
   @IsUUID()
   ownerId: string;
 
-  @ApiProperty({ description: 'Plot number of the land' })
+  @ApiProperty()
   @IsString()
   plotNumber: string;
 
-  @ApiProperty({ description: 'Location details' })
-  @IsObject()
-  location: {
-    latitude: number;
-    longitude: number;
-    address: string;
-  };
+  @ApiProperty()
+  @IsNumber()
+  latitude: number;
 
-  @ApiProperty({ description: 'Area in square meters' })
+  @ApiProperty()
+  @IsNumber()
+  longitude: number;
+
+  @ApiProperty()
+  @IsString()
+  address: string;
+
+  @ApiProperty()
   @IsNumber()
   area: number;
 
-  @ApiProperty({ description: 'Title of the land' })
+  @ApiProperty()
   @IsString()
   title: string;
 
-  @ApiPropertyOptional({ description: 'Land boundaries' })
+  @ApiPropertyOptional()
   @IsArray()
   @IsString({ each: true })
   @IsOptional()
   boundaries?: string[];
 
-  @ApiPropertyOptional({ description: 'Land description' })
+  @ApiPropertyOptional()
   @IsString()
   @IsOptional()
   description?: string;
 
-  @ApiPropertyOptional({ description: 'Supporting documents' })
-  @IsObject()
+  @ApiPropertyOptional()
   @IsOptional()
   documents?: object;
 
-  @ApiPropertyOptional({ description: 'Land value' })
+  @ApiPropertyOptional()
   @IsNumber()
   @IsOptional()
   value?: number;
-} 
+}
