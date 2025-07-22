@@ -16,18 +16,18 @@ export class Land {
   @Column()
   plotNumber: string;
 
-  // ✅ New PostGIS-compatible field
-  @Column({
-    type: 'geometry',
-    spatialFeatureType: 'Point',
-    srid: 4326,
-  })
-  coordinates: string; // WKT format: 'POINT(lon lat)'
+
+@Column({
+  type: 'geometry',
+  spatialFeatureType: 'Point',
+  srid: 4326,
+})
+coordinates: any; 
+
 
   @Column({ nullable: true })
   address?: string;
 
-  // Keep the rest as-is
   @Column('decimal', { precision: 10, scale: 2 })
   area: number;
 
