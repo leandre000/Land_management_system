@@ -16,27 +16,26 @@ export class LandRegistrationService {
     private readonly usersService: UsersService,
   ) {}
 
-  async create(createLandDto: CreateLandDto): Promise<Land> {
-    const owner = await this.usersService.findOne(createLandDto.ownerId);
-    
-    const land = new Land();
-    Object.assign(land, {
-      ...createLandDto,
-      owner,
-      status: LandStatus.REGISTERED,
-    });
+async create(createLandDto: CreateLandDto): Promise<Land> {
+  const owner = await this.usersService.findOne(createLandDto.ownerId);
 
-    const savedLand = await this.landRepository.save(land);
-    await this.rabbitMQService.handleLandRegistration(savedLand.id, savedLand);
+  const { latitude, longitude, address } = createLandDto;
+  const coordinates = `POINT(${longitude} ${latitude})`; // WKT format
 
-    return savedLand;
-  }
+  const land = this.landRepository.create({
+    ...createLandDto,
+    coordinates,
+    address,
+    owner,
+    status: LandStatus.REGISTERED,
+  });
 
-  async findAll(): Promise<Land[]> {
-    return this.landRepository.find({
-      relations: ['owner'],
-    });
-  }
+  const savedLand = await this.landRepository.save(land);
+  await this.rabbitMQService.handleLandRegistration(savedLand.id, savedLand);
+
+  return savedLand;
+}
+
 
   async findOne(id: string): Promise<Land> {
     const land = await this.landRepository.findOne({
