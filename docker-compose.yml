@@ -11,29 +11,29 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-
-  geoserver:
-    image: kartoza/geoserver
-    container_name: geoserver
-    restart: always
-    ports:
-      - "8080:8080"
-    environment:
-      GEOSERVER_ADMIN_USER: admin
-      GEOSERVER_ADMIN_PASSWORD: geoserver
-    volumes:
-      - ./geoserver_data:/opt/geoserver_data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   nestjs:
     build:
       context: .
+      target: development
     container_name: nestjs
-    restart: always
+    restart: unless-stopped
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     ports:
       - "3000:3000"
+    volumes:
+      - .:/app
+      - /app/node_modules
     environment:
+      NODE_ENV: development
+      CHOKIDAR_USEPOLLING: "true"
       DB_HOST: db
       DB_PORT: 5432
       DB_USERNAME: postgres
@@ -44,7 +44,9 @@ services:
       RABBITMQ_URL: amqp://rabbitmq:5672
       REDIS_HOST: redis
       REDIS_PORT: 6379
+    command: npm run start:dev
 
+  # Other services remain unchanged...
   redis:
     image: redis
     container_name: redis
@@ -59,6 +61,18 @@ services:
     ports:
       - "5672:5672"
       - "15672:15672"
+
+  geoserver:
+    image: kartoza/geoserver
+    container_name: geoserver
+    restart: always
+    ports:
+      - "8082:8080"
+    environment:
+      GEOSERVER_ADMIN_USER: admin
+      GEOSERVER_ADMIN_PASSWORD: geoserver
+    volumes:
+      - ./geoserver_data:/opt/geoserver_data
 
   adminer:
     image: adminer
