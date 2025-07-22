@@ -101,4 +101,24 @@ async create(createLandDto: CreateLandDto): Promise<Land> {
       relations: ['owner'],
     });
   }
+
+  async findNearby(latitude: number, longitude: number, radiusMeters = 1000): Promise<Land[]> {
+  return this.landRepository.query(
+    `
+    SELECT *
+    FROM lands
+    WHERE ST_DWithin(
+      coordinates::geography,
+      ST_SetSRID(ST_MakePoint($1, $2), 4326)::geography,
+      $3
+    )
+    ORDER BY ST_Distance(
+      coordinates::geography,
+      ST_SetSRID(ST_MakePoint($1, $2), 4326)::geography
+    )
+    `,
+    [longitude, latitude, radiusMeters]
+  );
+}
+
 } 
