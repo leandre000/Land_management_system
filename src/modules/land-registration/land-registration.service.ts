@@ -36,6 +36,13 @@ async create(createLandDto: CreateLandDto): Promise<Land> {
   return savedLand;
 }
 
+  async findAll(): Promise<Land[]> {
+    return this.landRepository.find({
+      relations: ['owner'],
+    });
+  }
+
+
 
   async findOne(id: string): Promise<Land> {
     const land = await this.landRepository.findOne({

@@ -34,6 +34,7 @@ export class LandRegistrationController {
   findMyLands(@Req() req: any) {
     return this.landRegistrationService.findByOwner(req.user.id);
   }
+  
 
   @Get(':id')
   @ApiOperation({ summary: 'Get a specific land' })
