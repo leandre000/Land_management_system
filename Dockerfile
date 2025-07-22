@@ -1,21 +1,28 @@
-# Base image
-FROM node:20
+# Development stage
+FROM node:20 AS development
 
-# Set working directory
 WORKDIR /app
 
-# Install dependencies
+# Install dependencies first (for better caching)
 COPY package*.json ./
 RUN npm install
 
-# Copy source code
+# Copy all files
 COPY . .
 
-# Build the NestJS app
+# Keep container running in dev mode
+CMD ["npm", "run", "start:dev"]
+
+# Production stage
+FROM node:20 AS production
+
+WORKDIR /app
+
+COPY package*.json ./
+RUN npm install --only=production
+
+COPY . .
 RUN npm run build
 
-# Expose the NestJS port
 EXPOSE 3000
-
-# Start the application
 CMD ["node", "dist/main.js"]
