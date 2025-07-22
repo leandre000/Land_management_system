@@ -16,13 +16,18 @@ export class Land {
   @Column()
   plotNumber: string;
 
-  @Column('jsonb')
-  location: {
-    latitude: number;
-    longitude: number;
-    address: string;
-  };
+  // ✅ New PostGIS-compatible field
+  @Column({
+    type: 'geometry',
+    spatialFeatureType: 'Point',
+    srid: 4326,
+  })
+  coordinates: string; // WKT format: 'POINT(lon lat)'
 
+  @Column({ nullable: true })
+  address?: string;
+
+  // Keep the rest as-is
   @Column('decimal', { precision: 10, scale: 2 })
   area: number;
 
@@ -65,4 +70,4 @@ export class Land {
 
   @UpdateDateColumn()
   updatedAt: Date;
-} 
+}
