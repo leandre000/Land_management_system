@@ -30,9 +30,15 @@ let LandRegistrationService = class LandRegistrationService {
     }
     async create(createLandDto) {
         const owner = await this.usersService.findOne(createLandDto.ownerId);
-        const land = new land_entity_1.Land();
-        Object.assign(land, {
+        const { latitude, longitude, address } = createLandDto;
+        const coordinates = {
+            type: 'Point',
+            coordinates: [longitude, latitude],
+        };
+        const land = this.landRepository.create({
             ...createLandDto,
+            coordinates,
+            address,
             owner,
             status: land_entity_1.LandStatus.REGISTERED,
         });
@@ -94,6 +100,21 @@ let LandRegistrationService = class LandRegistrationService {
             where: { status },
             relations: ['owner'],
         });
+    }
+    async findNearby(latitude, longitude, radiusMeters = 1000) {
+        return this.landRepository.query(`
+    SELECT *
+    FROM lands
+    WHERE ST_DWithin(
+      coordinates::geography,
+      ST_SetSRID(ST_MakePoint($1, $2), 4326)::geography,
+      $3
+    )
+    ORDER BY ST_Distance(
+      coordinates::geography,
+      ST_SetSRID(ST_MakePoint($1, $2), 4326)::geography
+    )
+    `, [longitude, latitude, radiusMeters]);
     }
 };
 exports.LandRegistrationService = LandRegistrationService;

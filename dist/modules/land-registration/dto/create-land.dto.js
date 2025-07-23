@@ -15,7 +15,9 @@ const swagger_1 = require("@nestjs/swagger");
 class CreateLandDto {
     ownerId;
     plotNumber;
-    location;
+    latitude;
+    longitude;
+    address;
     area;
     title;
     boundaries;
@@ -25,51 +27,60 @@ class CreateLandDto {
 }
 exports.CreateLandDto = CreateLandDto;
 __decorate([
-    (0, swagger_1.ApiProperty)({ description: 'ID of the land owner' }),
+    (0, swagger_1.ApiProperty)(),
     (0, class_validator_1.IsUUID)(),
     __metadata("design:type", String)
 ], CreateLandDto.prototype, "ownerId", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({ description: 'Plot number of the land' }),
+    (0, swagger_1.ApiProperty)(),
     (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
 ], CreateLandDto.prototype, "plotNumber", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({ description: 'Location details' }),
-    (0, class_validator_1.IsObject)(),
-    __metadata("design:type", Object)
-], CreateLandDto.prototype, "location", void 0);
+    (0, swagger_1.ApiProperty)(),
+    (0, class_validator_1.IsNumber)(),
+    __metadata("design:type", Number)
+], CreateLandDto.prototype, "latitude", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({ description: 'Area in square meters' }),
+    (0, swagger_1.ApiProperty)(),
+    (0, class_validator_1.IsNumber)(),
+    __metadata("design:type", Number)
+], CreateLandDto.prototype, "longitude", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)(),
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], CreateLandDto.prototype, "address", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)(),
     (0, class_validator_1.IsNumber)(),
     __metadata("design:type", Number)
 ], CreateLandDto.prototype, "area", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({ description: 'Title of the land' }),
+    (0, swagger_1.ApiProperty)(),
     (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
 ], CreateLandDto.prototype, "title", void 0);
 __decorate([
-    (0, swagger_1.ApiPropertyOptional)({ description: 'Land boundaries' }),
+    (0, swagger_1.ApiPropertyOptional)(),
     (0, class_validator_1.IsArray)(),
     (0, class_validator_1.IsString)({ each: true }),
     (0, class_validator_1.IsOptional)(),
     __metadata("design:type", Array)
 ], CreateLandDto.prototype, "boundaries", void 0);
 __decorate([
-    (0, swagger_1.ApiPropertyOptional)({ description: 'Land description' }),
+    (0, swagger_1.ApiPropertyOptional)(),
     (0, class_validator_1.IsString)(),
     (0, class_validator_1.IsOptional)(),
     __metadata("design:type", String)
 ], CreateLandDto.prototype, "description", void 0);
 __decorate([
-    (0, swagger_1.ApiPropertyOptional)({ description: 'Supporting documents' }),
-    (0, class_validator_1.IsObject)(),
+    (0, swagger_1.ApiPropertyOptional)(),
     (0, class_validator_1.IsOptional)(),
     __metadata("design:type", Object)
 ], CreateLandDto.prototype, "documents", void 0);
 __decorate([
-    (0, swagger_1.ApiPropertyOptional)({ description: 'Land value' }),
+    (0, swagger_1.ApiPropertyOptional)(),
     (0, class_validator_1.IsNumber)(),
     (0, class_validator_1.IsOptional)(),
     __metadata("design:type", Number)

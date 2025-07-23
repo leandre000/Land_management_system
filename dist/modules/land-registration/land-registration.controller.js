@@ -19,6 +19,9 @@ const create_land_dto_1 = require("./dto/create-land.dto");
 const update_land_dto_1 = require("./dto/update-land.dto");
 const jwt_auth_guard_1 = require("../auth/guards/jwt-auth.guard");
 const swagger_1 = require("@nestjs/swagger");
+const roles_guard_1 = require("../auth/guards/roles.guard");
+const roles_decorator_1 = require("../auth/decorators/roles.decorator");
+const user_role_enum_1 = require("../../common/enums/user-role.enum");
 let LandRegistrationController = class LandRegistrationController {
     landRegistrationService;
     constructor(landRegistrationService) {
@@ -32,6 +35,9 @@ let LandRegistrationController = class LandRegistrationController {
     }
     findAll() {
         return this.landRegistrationService.findAll();
+    }
+    findNearby(lat, lng, radius) {
+        return this.landRegistrationService.findNearby(+lat, +lng, +radius || 1000);
     }
     findMyLands(req) {
         return this.landRegistrationService.findByOwner(req.user.id);
@@ -62,6 +68,7 @@ __decorate([
 ], LandRegistrationController.prototype, "create", null);
 __decorate([
     (0, common_1.Get)(),
+    (0, roles_decorator_1.Roles)(user_role_enum_1.UserRole.ADMIN),
     (0, swagger_1.ApiOperation)({ summary: 'Get all registered lands' }),
     (0, swagger_1.ApiResponse)({ status: 200, description: 'Return all registered lands.' }),
     __metadata("design:type", Function),
@@ -69,7 +76,20 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], LandRegistrationController.prototype, "findAll", null);
 __decorate([
+    (0, common_1.Get)('nearby'),
+    (0, roles_decorator_1.Roles)(user_role_enum_1.UserRole.CITIZEN),
+    (0, swagger_1.ApiOperation)({ summary: 'Get nearby lands' }),
+    (0, swagger_1.ApiResponse)({ status: 200, description: 'Return nearby lands using postGIS spartial coordinates' }),
+    __param(0, (0, common_1.Query)('lat')),
+    __param(1, (0, common_1.Query)('lng')),
+    __param(2, (0, common_1.Query)('radius')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Number, Number, Number]),
+    __metadata("design:returntype", void 0)
+], LandRegistrationController.prototype, "findNearby", null);
+__decorate([
     (0, common_1.Get)('my-lands'),
+    (0, roles_decorator_1.Roles)(user_role_enum_1.UserRole.CITIZEN),
     (0, swagger_1.ApiOperation)({ summary: 'Get all lands owned by the current user' }),
     (0, swagger_1.ApiResponse)({ status: 200, description: 'Return all lands owned by the current user.' }),
     __param(0, (0, common_1.Req)()),
@@ -79,6 +99,7 @@ __decorate([
 ], LandRegistrationController.prototype, "findMyLands", null);
 __decorate([
     (0, common_1.Get)(':id'),
+    (0, roles_decorator_1.Roles)(user_role_enum_1.UserRole.CITIZEN, user_role_enum_1.UserRole.ADMIN),
     (0, swagger_1.ApiOperation)({ summary: 'Get a specific land' }),
     (0, swagger_1.ApiResponse)({ status: 200, description: 'Return the land.' }),
     __param(0, (0, common_1.Param)('id')),
@@ -88,6 +109,7 @@ __decorate([
 ], LandRegistrationController.prototype, "findOne", null);
 __decorate([
     (0, common_1.Put)(':id'),
+    (0, roles_decorator_1.Roles)(user_role_enum_1.UserRole.CITIZEN),
     (0, swagger_1.ApiOperation)({ summary: 'Update a land' }),
     (0, swagger_1.ApiResponse)({ status: 200, description: 'The land has been successfully updated.' }),
     __param(0, (0, common_1.Param)('id')),
@@ -98,6 +120,7 @@ __decorate([
 ], LandRegistrationController.prototype, "update", null);
 __decorate([
     (0, common_1.Delete)(':id'),
+    (0, roles_decorator_1.Roles)(user_role_enum_1.UserRole.CITIZEN),
     (0, swagger_1.ApiOperation)({ summary: 'Delete a land' }),
     (0, swagger_1.ApiResponse)({ status: 200, description: 'The land has been successfully deleted.' }),
     __param(0, (0, common_1.Param)('id')),
@@ -107,6 +130,7 @@ __decorate([
 ], LandRegistrationController.prototype, "remove", null);
 __decorate([
     (0, common_1.Post)(':id/verify'),
+    (0, roles_decorator_1.Roles)(user_role_enum_1.UserRole.LAND_OFFICER),
     (0, swagger_1.ApiOperation)({ summary: 'Verify a land' }),
     (0, swagger_1.ApiResponse)({ status: 200, description: 'The land has been successfully verified.' }),
     __param(0, (0, common_1.Param)('id')),
@@ -118,7 +142,7 @@ __decorate([
 exports.LandRegistrationController = LandRegistrationController = __decorate([
     (0, swagger_1.ApiTags)('land-registration'),
     (0, common_1.Controller)('land-registration'),
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
     __metadata("design:paramtypes", [land_registration_service_1.LandRegistrationService])
 ], LandRegistrationController);
 //# sourceMappingURL=land-registration.controller.js.map

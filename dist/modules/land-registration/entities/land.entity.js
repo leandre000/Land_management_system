@@ -22,7 +22,8 @@ var LandStatus;
 let Land = class Land {
     id;
     plotNumber;
-    location;
+    coordinates;
+    address;
     area;
     title;
     boundaries;
@@ -47,9 +48,17 @@ __decorate([
     __metadata("design:type", String)
 ], Land.prototype, "plotNumber", void 0);
 __decorate([
-    (0, typeorm_1.Column)('jsonb'),
+    (0, typeorm_1.Column)({
+        type: 'geometry',
+        spatialFeatureType: 'Point',
+        srid: 4326,
+    }),
     __metadata("design:type", Object)
-], Land.prototype, "location", void 0);
+], Land.prototype, "coordinates", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ nullable: true }),
+    __metadata("design:type", String)
+], Land.prototype, "address", void 0);
 __decorate([
     (0, typeorm_1.Column)('decimal', { precision: 10, scale: 2 }),
     __metadata("design:type", Number)

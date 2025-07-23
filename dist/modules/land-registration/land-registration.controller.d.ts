@@ -6,6 +6,7 @@ export declare class LandRegistrationController {
     constructor(landRegistrationService: LandRegistrationService);
     create(createLandDto: CreateLandDto, req: any): Promise<import("./entities/land.entity").Land>;
     findAll(): Promise<import("./entities/land.entity").Land[]>;
+    findNearby(lat: number, lng: number, radius: number): Promise<import("./entities/land.entity").Land[]>;
     findMyLands(req: any): Promise<import("./entities/land.entity").Land[]>;
     findOne(id: string): Promise<import("./entities/land.entity").Land>;
     update(id: string, updateLandDto: UpdateLandDto): Promise<import("./entities/land.entity").Land>;

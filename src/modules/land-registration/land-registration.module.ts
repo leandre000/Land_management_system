@@ -7,6 +7,7 @@ import { RabbitMQModule } from '../rabbitmq/rabbitmq.module';
 import { RedisModule } from '../redis/redis.module';
 import { UsersModule } from '../users/users.module';
 
+
 @Module({
   imports: [
     TypeOrmModule.forFeature([Land]),

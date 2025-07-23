@@ -17,4 +17,5 @@ export declare class LandRegistrationService {
     verify(id: string, verifiedBy: string): Promise<Land>;
     findByOwner(ownerId: string): Promise<Land[]>;
     findByStatus(status: LandStatus): Promise<Land[]>;
+    findNearby(latitude: number, longitude: number, radiusMeters?: number): Promise<Land[]>;
 }

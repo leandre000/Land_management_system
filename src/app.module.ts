@@ -50,6 +50,7 @@ import { NotificationsModule } from './modules/notifications/notifications.modul
     ConflictResolutionModule,
     UrbanizationModule,
     NotificationsModule,
+
   ],
 })
 export class AppModule {}
