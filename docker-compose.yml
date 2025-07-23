@@ -52,7 +52,7 @@ services:
     container_name: redis
     restart: always
     ports:
-      - "6379:6379"
+      - "6380:6379"
 
   rabbitmq:
     image: rabbitmq:3-management

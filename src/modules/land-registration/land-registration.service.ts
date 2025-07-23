@@ -128,7 +128,7 @@ async create(createLandDto: CreateLandDto): Promise<Land> {
     ORDER BY ST_Distance(
       coordinates::geography,
       ST_SetSRID(ST_MakePoint($1, $2), 4326)::geography
-    )
+    )  
     `,
     [longitude, latitude, radiusMeters]
   );
