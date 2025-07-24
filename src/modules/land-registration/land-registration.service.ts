@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Land, LandStatus } from './entities/land.entity';
@@ -16,30 +16,42 @@ export class LandRegistrationService {
     private readonly usersService: UsersService,
   ) {}
 
-async create(createLandDto: CreateLandDto): Promise<Land> {
-  const owner = await this.usersService.findOne(createLandDto.ownerId);
+  async create(createLandDto: CreateLandDto): Promise<Land> {
+    const owner = await this.usersService.findOne(createLandDto.ownerId);
+    const { latitude, longitude, address } = createLandDto;
 
-  const { latitude, longitude, address } = createLandDto;
+    const existingLand = await this.landRepository.findOne({
+      where: [
+        { coordinates: { type: 'Point', coordinates: [longitude, latitude] } },
+        { address },
+      ],
+    });
 
+    if (existingLand) {
 
-  const coordinates = {
-    type: 'Point',
-    coordinates: [longitude, latitude],
-  };
+      throw new ConflictException(
+        'A land record with the same coordinates or address already exists.',
+      );
+    }
 
-  const land = this.landRepository.create({
-    ...createLandDto,
-    coordinates,
-    address,
-    owner,
-    status: LandStatus.REGISTERED,
-  });
+    const coordinates = {
+      type: 'Point',
+      coordinates: [longitude, latitude],
+    };
 
-  const savedLand = await this.landRepository.save(land);
-  await this.rabbitMQService.handleLandRegistration(savedLand.id, savedLand);
+    const land = this.landRepository.create({
+      ...createLandDto,
+      coordinates,
+      address,
+      owner,
+      status: LandStatus.REGISTERED,
+    });
 
-  return savedLand;
-}
+    const savedLand = await this.landRepository.save(land);
+    await this.rabbitMQService.handleLandRegistration(savedLand.id, savedLand);
+
+    return savedLand;
+  }
 
 
   async findAll(): Promise<Land[]> {

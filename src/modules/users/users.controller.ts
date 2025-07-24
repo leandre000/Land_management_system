@@ -11,7 +11,7 @@ import { UserRole } from '../../common/enums/user-role.enum';
 
 @ApiTags('users')
 @Controller('users')
-// @UseGuards(JwtAuthGuard, RolesGuard) // Apply both guards to all routes
+@UseGuards(JwtAuthGuard, RolesGuard) // Apply both guards to all routes
 @ApiBearerAuth() // Indicate that these routes require Bearer token
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}

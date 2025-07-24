@@ -31,6 +31,15 @@ let LandRegistrationService = class LandRegistrationService {
     async create(createLandDto) {
         const owner = await this.usersService.findOne(createLandDto.ownerId);
         const { latitude, longitude, address } = createLandDto;
+        const existingLand = await this.landRepository.findOne({
+            where: [
+                { coordinates: { type: 'Point', coordinates: [longitude, latitude] } },
+                { address },
+            ],
+        });
+        if (existingLand) {
+            throw new common_1.ConflictException('A land record with the same coordinates or address already exists.');
+        }
         const coordinates = {
             type: 'Point',
             coordinates: [longitude, latitude],
