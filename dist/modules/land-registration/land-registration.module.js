@@ -15,6 +15,8 @@ const land_registration_controller_1 = require("./land-registration.controller")
 const rabbitmq_module_1 = require("../rabbitmq/rabbitmq.module");
 const redis_module_1 = require("../redis/redis.module");
 const users_module_1 = require("../users/users.module");
+const audit_logs_module_1 = require("../audit-logs/audit-logs.module");
+const document_generation_module_1 = require("../document-generation/document-generation.module");
 let LandRegistrationModule = class LandRegistrationModule {
 };
 exports.LandRegistrationModule = LandRegistrationModule;
@@ -25,6 +27,8 @@ exports.LandRegistrationModule = LandRegistrationModule = __decorate([
             rabbitmq_module_1.RabbitMQModule,
             redis_module_1.RedisModule,
             users_module_1.UsersModule,
+            audit_logs_module_1.AuditLogsModule,
+            document_generation_module_1.DocumentGenerationModule,
         ],
         controllers: [land_registration_controller_1.LandRegistrationController],
         providers: [land_registration_service_1.LandRegistrationService],

@@ -13,6 +13,7 @@ exports.CreateUserDto = void 0;
 const class_validator_1 = require("class-validator");
 const swagger_1 = require("@nestjs/swagger");
 const user_role_enum_1 = require("../../../common/enums/user-role.enum");
+const rwanda_national_id_validator_1 = require("../../../common/validators/rwanda-national-id.validator");
 class CreateUserDto {
     firstName;
     lastName;
@@ -20,6 +21,7 @@ class CreateUserDto {
     password;
     phoneNumber;
     address;
+    nationalId;
     role;
 }
 exports.CreateUserDto = CreateUserDto;
@@ -55,6 +57,15 @@ __decorate([
     (0, class_validator_1.IsOptional)(),
     __metadata("design:type", String)
 ], CreateUserDto.prototype, "address", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({
+        description: 'Rwanda National ID (16 digits: 1YYYY7NNNNNNNC)',
+        example: '1199870123456789'
+    }),
+    (0, rwanda_national_id_validator_1.IsRwandaNationalId)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], CreateUserDto.prototype, "nationalId", void 0);
 __decorate([
     (0, swagger_1.ApiPropertyOptional)({ description: 'Role of the user', enum: user_role_enum_1.UserRole, default: user_role_enum_1.UserRole.CITIZEN }),
     (0, class_validator_1.IsEnum)(user_role_enum_1.UserRole),

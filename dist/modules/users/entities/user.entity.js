@@ -22,6 +22,7 @@ let User = class User {
     password;
     phoneNumber;
     address;
+    nationalId;
     role;
     createdAt;
     updatedAt;
@@ -68,6 +69,10 @@ __decorate([
     (0, typeorm_1.Column)({ nullable: true }),
     __metadata("design:type", String)
 ], User.prototype, "address", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ nullable: true, unique: true }),
+    __metadata("design:type", String)
+], User.prototype, "nationalId", void 0);
 __decorate([
     (0, typeorm_1.Column)({
         type: 'enum',

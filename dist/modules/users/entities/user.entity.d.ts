@@ -7,6 +7,7 @@ export declare class User {
     password: string;
     phoneNumber?: string;
     address?: string;
+    nationalId?: string;
     role: UserRole;
     createdAt: Date;
     updatedAt: Date;

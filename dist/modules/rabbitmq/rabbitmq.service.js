@@ -22,6 +22,9 @@ var RabbitMQEvents;
     RabbitMQEvents["LAND_UPDATED"] = "land.updated";
     RabbitMQEvents["USER_NOTIFICATION"] = "user.notification";
     RabbitMQEvents["STATUS_UPDATE"] = "status.update";
+    RabbitMQEvents["GEOJSON_PROCESSED"] = "geojson.processed";
+    RabbitMQEvents["DOCUMENT_GENERATION_REQUESTED"] = "document.generation.requested";
+    RabbitMQEvents["AUDIT_LOG_CREATED"] = "audit.log.created";
 })(RabbitMQEvents || (exports.RabbitMQEvents = RabbitMQEvents = {}));
 let RabbitMQService = class RabbitMQService {
     client;
@@ -65,6 +68,27 @@ let RabbitMQService = class RabbitMQService {
     }
     async handleStatusUpdate(data) {
         await this.emit(RabbitMQEvents.STATUS_UPDATE, data);
+    }
+    async handleGeoJsonProcessed(landId, geoJsonData, processedData) {
+        await this.emit(RabbitMQEvents.GEOJSON_PROCESSED, {
+            landId,
+            geoJsonData,
+            processedData,
+        });
+    }
+    async handleDocumentGenerationRequest(landId, documentType, userId) {
+        await this.emit(RabbitMQEvents.DOCUMENT_GENERATION_REQUESTED, {
+            landId,
+            documentType,
+            userId,
+            requestedAt: new Date(),
+        });
+    }
+    async handleAuditLogCreated(auditLogId, data) {
+        await this.emit(RabbitMQEvents.AUDIT_LOG_CREATED, {
+            auditLogId,
+            ...data,
+        });
     }
 };
 exports.RabbitMQService = RabbitMQService;

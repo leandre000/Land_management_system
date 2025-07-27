@@ -12,6 +12,7 @@ const microservices_1 = require("@nestjs/microservices");
 const rabbitmq_service_1 = require("./rabbitmq.service");
 const event_listener_service_1 = require("./event-listener.service");
 const notifications_module_1 = require("../notifications/notifications.module");
+const audit_logs_module_1 = require("../audit-logs/audit-logs.module");
 let RabbitMQModule = class RabbitMQModule {
 };
 exports.RabbitMQModule = RabbitMQModule;
@@ -32,6 +33,7 @@ exports.RabbitMQModule = RabbitMQModule = __decorate([
                 },
             ]),
             notifications_module_1.NotificationsModule,
+            (0, common_1.forwardRef)(() => audit_logs_module_1.AuditLogsModule),
         ],
         providers: [rabbitmq_service_1.RabbitMQService, event_listener_service_1.EventListenerService],
         exports: [rabbitmq_service_1.RabbitMQService],

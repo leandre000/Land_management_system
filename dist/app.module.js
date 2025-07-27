@@ -20,6 +20,9 @@ const land_taxes_module_1 = require("./modules/land-taxes/land-taxes.module");
 const conflict_resolution_module_1 = require("./modules/conflict-resolution/conflict-resolution.module");
 const urbanization_module_1 = require("./modules/urbanization/urbanization.module");
 const notifications_module_1 = require("./modules/notifications/notifications.module");
+const audit_logs_module_1 = require("./modules/audit-logs/audit-logs.module");
+const document_generation_module_1 = require("./modules/document-generation/document-generation.module");
+const reports_module_1 = require("./modules/reports/reports.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -54,6 +57,9 @@ exports.AppModule = AppModule = __decorate([
             conflict_resolution_module_1.ConflictResolutionModule,
             urbanization_module_1.UrbanizationModule,
             notifications_module_1.NotificationsModule,
+            audit_logs_module_1.AuditLogsModule,
+            document_generation_module_1.DocumentGenerationModule,
+            reports_module_1.ReportsModule,
         ],
     })
 ], AppModule);

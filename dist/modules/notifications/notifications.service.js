@@ -37,6 +37,7 @@ var NotificationType;
     NotificationType["TAX_ASSESSED"] = "TAX_ASSESSED";
     NotificationType["TAX_PAID"] = "TAX_PAID";
     NotificationType["TAX_OVERDUE"] = "TAX_OVERDUE";
+    NotificationType["DOCUMENT_GENERATED"] = "DOCUMENT_GENERATED";
 })(NotificationType || (exports.NotificationType = NotificationType = {}));
 let NotificationsService = class NotificationsService {
     cacheManager;

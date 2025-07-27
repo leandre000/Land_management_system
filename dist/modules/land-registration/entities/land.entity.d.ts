@@ -8,7 +8,8 @@ export declare enum LandStatus {
 export declare class Land {
     id: string;
     plotNumber: string;
-    coordinates: any;
+    geometry: any;
+    geoJson?: object;
     address?: string;
     area: number;
     title: string;

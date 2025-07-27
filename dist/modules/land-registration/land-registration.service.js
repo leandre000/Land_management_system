@@ -19,41 +19,194 @@ const typeorm_2 = require("typeorm");
 const land_entity_1 = require("./entities/land.entity");
 const rabbitmq_service_1 = require("../rabbitmq/rabbitmq.service");
 const users_service_1 = require("../users/users.service");
+const audit_logs_service_1 = require("../audit-logs/audit-logs.service");
+const document_generation_service_1 = require("../document-generation/document-generation.service");
+const audit_log_entity_1 = require("../audit-logs/entities/audit-log.entity");
+const rwanda_national_id_validator_1 = require("../../common/validators/rwanda-national-id.validator");
 let LandRegistrationService = class LandRegistrationService {
     landRepository;
     rabbitMQService;
     usersService;
-    constructor(landRepository, rabbitMQService, usersService) {
+    auditLogsService;
+    documentGenerationService;
+    constructor(landRepository, rabbitMQService, usersService, auditLogsService, documentGenerationService) {
         this.landRepository = landRepository;
         this.rabbitMQService = rabbitMQService;
         this.usersService = usersService;
+        this.auditLogsService = auditLogsService;
+        this.documentGenerationService = documentGenerationService;
     }
     async create(createLandDto) {
         const owner = await this.usersService.findOne(createLandDto.ownerId);
         const { latitude, longitude, address } = createLandDto;
         const existingLand = await this.landRepository.findOne({
             where: [
-                { coordinates: { type: 'Point', coordinates: [longitude, latitude] } },
+                { geometry: { type: 'Point', coordinates: [longitude, latitude] } },
                 { address },
             ],
         });
         if (existingLand) {
             throw new common_1.ConflictException('A land record with the same coordinates or address already exists.');
         }
-        const coordinates = {
+        const geometry = {
             type: 'Point',
             coordinates: [longitude, latitude],
         };
         const land = this.landRepository.create({
             ...createLandDto,
-            coordinates,
+            geometry,
             address,
             owner,
             status: land_entity_1.LandStatus.REGISTERED,
         });
         const savedLand = await this.landRepository.save(land);
+        await this.auditLogsService.createLog({
+            action: audit_log_entity_1.AuditAction.LAND_CREATED,
+            entityType: 'Land',
+            entityId: savedLand.id,
+            newValues: savedLand,
+            user: owner,
+            description: `Land parcel ${savedLand.plotNumber} created`,
+        });
         await this.rabbitMQService.handleLandRegistration(savedLand.id, savedLand);
         return savedLand;
+    }
+    async createWithGeoJson(createLandDto, userId) {
+        const ownerId = createLandDto.ownerId || userId;
+        if (!ownerId) {
+            throw new common_1.ConflictException('Owner ID is required');
+        }
+        const owner = await this.usersService.findOne(ownerId);
+        const { geoJson } = createLandDto;
+        if (geoJson.type !== 'Feature' || geoJson.geometry.type !== 'Polygon') {
+            throw new common_1.ConflictException('GeoJSON must be a Feature with Polygon geometry');
+        }
+        const calculatedArea = this.documentGenerationService.calculateLandArea(geoJson);
+        const coordinates = geoJson.geometry.coordinates[0];
+        const coordinateString = coordinates
+            .map(coord => `${coord[0]} ${coord[1]}`)
+            .join(', ');
+        const wkt = `POLYGON((${coordinateString}))`;
+        const overlappingLand = await this.landRepository.createQueryBuilder('land')
+            .where('ST_Intersects(land.geometry, ST_GeomFromText(:wkt, 4326))', { wkt })
+            .getOne();
+        if (overlappingLand) {
+            throw new common_1.ConflictException(`Land parcel overlaps with existing parcel: ${overlappingLand.plotNumber}`);
+        }
+        const land = this.landRepository.create({
+            plotNumber: createLandDto.plotNumber,
+            title: createLandDto.title,
+            address: createLandDto.address,
+            description: createLandDto.description,
+            documents: createLandDto.documents,
+            value: createLandDto.value,
+            area: calculatedArea,
+            geometry: () => `ST_GeomFromText('${wkt}', 4326)`,
+            geoJson: geoJson,
+            owner,
+            status: land_entity_1.LandStatus.REGISTERED,
+        });
+        const savedLand = await this.landRepository.save(land);
+        await this.auditLogsService.createLog({
+            action: audit_log_entity_1.AuditAction.GEOJSON_PROCESSED,
+            entityType: 'Land',
+            entityId: savedLand.id,
+            newValues: savedLand,
+            metadata: {
+                geoJsonArea: calculatedArea,
+                coordinatesCount: geoJson.geometry.coordinates[0].length,
+            },
+            user: owner,
+            description: `Land parcel ${savedLand.plotNumber} created from GeoJSON with area ${calculatedArea}m²`,
+        });
+        await this.rabbitMQService.handleGeoJsonProcessed(savedLand.id, geoJson, { area: calculatedArea, wkt });
+        await this.rabbitMQService.handleLandRegistration(savedLand.id, savedLand);
+        setTimeout(async () => {
+            await this.generateLandCertificate(savedLand.id, userId);
+        }, 1000);
+        return savedLand;
+    }
+    async generateLandCertificate(landId, userId) {
+        const land = await this.findOne(landId);
+        const taxAssessment = await this.getTaxAssessmentForLand(landId);
+        let mapImage;
+        if (land.geoJson) {
+            mapImage = await this.documentGenerationService.generateMapPreview(land.geoJson);
+        }
+        const documentData = {
+            land,
+            owner: {
+                ...land.owner,
+                nationalId: land.owner.nationalId ? (0, rwanda_national_id_validator_1.formatRwandaNationalId)(land.owner.nationalId) : null,
+            },
+            taxAssessment,
+            mapImage,
+            generatedAt: new Date(),
+            documentType: 'OWNERSHIP_CERTIFICATE',
+        };
+        const pdfBuffer = await this.documentGenerationService.generateLandCertificate(documentData);
+        await this.auditLogsService.createLog({
+            action: audit_log_entity_1.AuditAction.DOCUMENT_GENERATED,
+            entityType: 'Land',
+            entityId: landId,
+            metadata: {
+                documentType: 'OWNERSHIP_CERTIFICATE',
+                documentSize: pdfBuffer.length,
+            },
+            userId,
+            description: `Land certificate generated for parcel ${land.plotNumber}`,
+        });
+        await this.rabbitMQService.handleDocumentGenerationRequest(landId, 'OWNERSHIP_CERTIFICATE', userId || land.owner.id);
+        return pdfBuffer;
+    }
+    async generateLandCertificateHtml(landId, userId) {
+        const land = await this.findOne(landId);
+        const taxAssessment = await this.getTaxAssessmentForLand(landId);
+        let mapImage;
+        if (land.geoJson) {
+            mapImage = await this.documentGenerationService.generateMapPreview(land.geoJson);
+        }
+        const documentData = {
+            land,
+            owner: {
+                ...land.owner,
+                nationalId: land.owner.nationalId ? (0, rwanda_national_id_validator_1.formatRwandaNationalId)(land.owner.nationalId) : null,
+            },
+            taxAssessment,
+            mapImage,
+            generatedAt: new Date(),
+            documentType: 'OWNERSHIP_CERTIFICATE',
+        };
+        const html = await this.documentGenerationService.generateLandCertificateHtml(documentData);
+        await this.auditLogsService.createLog({
+            action: audit_log_entity_1.AuditAction.DOCUMENT_GENERATED,
+            entityType: 'Land',
+            entityId: landId,
+            metadata: {
+                documentType: 'HTML_CERTIFICATE',
+                format: 'HTML',
+            },
+            userId,
+            description: `Land certificate HTML generated for parcel ${land.plotNumber}`,
+        });
+        return html;
+    }
+    async getTaxAssessmentForLand(landId) {
+        try {
+            const assessment = await this.landRepository.manager
+                .createQueryBuilder()
+                .select('ta.*')
+                .from('tax_assessments', 'ta')
+                .where('ta.landId = :landId', { landId })
+                .orderBy('ta.assessmentDate', 'DESC')
+                .limit(1)
+                .getRawOne();
+            return assessment;
+        }
+        catch (error) {
+            console.log('No tax assessment found for land:', landId);
+            return null;
+        }
     }
     async findAll() {
         return this.landRepository.find({
@@ -132,6 +285,8 @@ exports.LandRegistrationService = LandRegistrationService = __decorate([
     __param(0, (0, typeorm_1.InjectRepository)(land_entity_1.Land)),
     __metadata("design:paramtypes", [typeorm_2.Repository,
         rabbitmq_service_1.RabbitMQService,
-        users_service_1.UsersService])
+        users_service_1.UsersService,
+        audit_logs_service_1.AuditLogsService,
+        document_generation_service_1.DocumentGenerationService])
 ], LandRegistrationService);
 //# sourceMappingURL=land-registration.service.js.map

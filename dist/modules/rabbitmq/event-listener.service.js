@@ -13,11 +13,14 @@ exports.EventListenerService = void 0;
 const common_1 = require("@nestjs/common");
 const event_emitter_1 = require("@nestjs/event-emitter");
 const notifications_service_1 = require("../notifications/notifications.service");
+const audit_logs_service_1 = require("../audit-logs/audit-logs.service");
 const rabbitmq_service_1 = require("./rabbitmq.service");
 let EventListenerService = class EventListenerService {
     notificationsService;
-    constructor(notificationsService) {
+    auditLogsService;
+    constructor(notificationsService, auditLogsService) {
         this.notificationsService = notificationsService;
+        this.auditLogsService = auditLogsService;
     }
     async handleLandRegistered(payload) {
         if (payload.data.owner) {
@@ -55,6 +58,28 @@ let EventListenerService = class EventListenerService {
             await this.notificationsService.sendNotification(payload.userId, payload.type, payload.data);
         }
     }
+    async handleGeoJsonProcessed(payload) {
+        console.log('GeoJSON processed event received:', payload);
+        const { landId, geoJsonData, processedData } = payload;
+        console.log(`GeoJSON processing completed for land ${landId}:`);
+        console.log(`- Calculated area: ${processedData.area}m²`);
+        console.log(`- Coordinate count: ${geoJsonData.geometry.coordinates[0].length}`);
+    }
+    async handleDocumentGenerationRequested(payload) {
+        console.log('Document generation requested:', payload);
+        const { landId, documentType, userId } = payload;
+        await this.notificationsService.sendNotification(userId, notifications_service_1.NotificationType.DOCUMENT_GENERATED, {
+            landId,
+            documentType: documentType.toLowerCase().replace('_', ' '),
+            message: `Your ${documentType.toLowerCase().replace('_', ' ')} has been generated and is ready for download.`
+        });
+        console.log(`${documentType} generated for land ${landId} by user ${userId}`);
+    }
+    async handleAuditLogCreated(payload) {
+        console.log('Audit log created:', payload);
+        const { auditLogId } = payload;
+        console.log(`Audit log ${auditLogId} created for tracking purposes`);
+    }
 };
 exports.EventListenerService = EventListenerService;
 __decorate([
@@ -87,8 +112,27 @@ __decorate([
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
 ], EventListenerService.prototype, "handleStatusUpdate", null);
+__decorate([
+    (0, event_emitter_1.OnEvent)(rabbitmq_service_1.RabbitMQEvents.GEOJSON_PROCESSED),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], EventListenerService.prototype, "handleGeoJsonProcessed", null);
+__decorate([
+    (0, event_emitter_1.OnEvent)(rabbitmq_service_1.RabbitMQEvents.DOCUMENT_GENERATION_REQUESTED),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], EventListenerService.prototype, "handleDocumentGenerationRequested", null);
+__decorate([
+    (0, event_emitter_1.OnEvent)(rabbitmq_service_1.RabbitMQEvents.AUDIT_LOG_CREATED),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], EventListenerService.prototype, "handleAuditLogCreated", null);
 exports.EventListenerService = EventListenerService = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [notifications_service_1.NotificationsService])
+    __metadata("design:paramtypes", [notifications_service_1.NotificationsService,
+        audit_logs_service_1.AuditLogsService])
 ], EventListenerService);
 //# sourceMappingURL=event-listener.service.js.map

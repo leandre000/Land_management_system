@@ -31,7 +31,8 @@ export declare enum NotificationType {
     DISPUTE_UPDATED = "DISPUTE_UPDATED",
     TAX_ASSESSED = "TAX_ASSESSED",
     TAX_PAID = "TAX_PAID",
-    TAX_OVERDUE = "TAX_OVERDUE"
+    TAX_OVERDUE = "TAX_OVERDUE",
+    DOCUMENT_GENERATED = "DOCUMENT_GENERATED"
 }
 export declare class NotificationsService {
     private cacheManager;

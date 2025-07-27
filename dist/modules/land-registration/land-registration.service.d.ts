@@ -1,15 +1,24 @@
 import { Repository } from 'typeorm';
 import { Land, LandStatus } from './entities/land.entity';
 import { CreateLandDto } from './dto/create-land.dto';
+import { CreateLandGeoJsonDto } from './dto/create-land-geojson.dto';
 import { UpdateLandDto } from './dto/update-land.dto';
 import { RabbitMQService } from '../rabbitmq/rabbitmq.service';
 import { UsersService } from '../users/users.service';
+import { AuditLogsService } from '../audit-logs/audit-logs.service';
+import { DocumentGenerationService } from '../document-generation/document-generation.service';
 export declare class LandRegistrationService {
     private readonly landRepository;
     private readonly rabbitMQService;
     private readonly usersService;
-    constructor(landRepository: Repository<Land>, rabbitMQService: RabbitMQService, usersService: UsersService);
+    private readonly auditLogsService;
+    private readonly documentGenerationService;
+    constructor(landRepository: Repository<Land>, rabbitMQService: RabbitMQService, usersService: UsersService, auditLogsService: AuditLogsService, documentGenerationService: DocumentGenerationService);
     create(createLandDto: CreateLandDto): Promise<Land>;
+    createWithGeoJson(createLandDto: CreateLandGeoJsonDto, userId?: string): Promise<Land>;
+    generateLandCertificate(landId: string, userId?: string): Promise<Buffer>;
+    generateLandCertificateHtml(landId: string, userId?: string): Promise<string>;
+    private getTaxAssessmentForLand;
     findAll(): Promise<Land[]>;
     findOne(id: string): Promise<Land>;
     update(id: string, updateLandDto: UpdateLandDto): Promise<Land>;
