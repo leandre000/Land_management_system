@@ -1,6 +1,7 @@
 import { IsString, IsEmail, IsEnum, IsOptional } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { UserRole } from '../../../common/enums/user-role.enum'
+import { UserRole } from '../../../common/enums/user-role.enum';
+import { IsRwandaNationalId } from '../../../common/validators/rwanda-national-id.validator';
 
 export class CreateUserDto {
   @ApiProperty({ description: 'First name of the user' })
@@ -28,6 +29,14 @@ export class CreateUserDto {
   @IsString()
   @IsOptional()
   address?: string;
+
+  @ApiPropertyOptional({ 
+    description: 'Rwanda National ID (16 digits: 1YYYY7NNNNNNNC)',
+    example: '1199870123456789'
+  })
+  @IsRwandaNationalId()
+  @IsOptional()
+  nationalId?: string;
 
   @ApiPropertyOptional({ description: 'Role of the user', enum: UserRole, default: UserRole.CITIZEN })
   @IsEnum(UserRole)

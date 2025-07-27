@@ -27,6 +27,9 @@ export class User {
   @Column({ nullable: true })
   address?: string;
 
+  @Column({ nullable: true, unique: true })
+  nationalId?: string;
+
   @Column({
     type: 'enum',
     enum: UserRole,
