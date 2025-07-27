@@ -19,10 +19,13 @@ export class Land {
 
 @Column({
   type: 'geometry',
-  spatialFeatureType: 'Point',
+  spatialFeatureType: 'Polygon',
   srid: 4326,
 })
-coordinates: any; 
+geometry: any;
+
+@Column('jsonb', { nullable: true })
+geoJson?: object; 
 
 
   @Column({ nullable: true })

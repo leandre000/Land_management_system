@@ -6,6 +6,8 @@ import { LandRegistrationController } from './land-registration.controller';
 import { RabbitMQModule } from '../rabbitmq/rabbitmq.module';
 import { RedisModule } from '../redis/redis.module';
 import { UsersModule } from '../users/users.module';
+import { AuditLogsModule } from '../audit-logs/audit-logs.module';
+import { DocumentGenerationModule } from '../document-generation/document-generation.module';
 
 
 @Module({
@@ -14,6 +16,8 @@ import { UsersModule } from '../users/users.module';
     RabbitMQModule,
     RedisModule,
     UsersModule,
+    AuditLogsModule,
+    DocumentGenerationModule,
   ],
   controllers: [LandRegistrationController],
   providers: [LandRegistrationService],

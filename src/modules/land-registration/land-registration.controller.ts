@@ -1,12 +1,14 @@
-import { Controller, Get, Post, Body, Param, Delete, Put, UseGuards, Req, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Delete, Put, UseGuards, Req, Query, Res, HttpStatus } from '@nestjs/common';
 import { LandRegistrationService } from './land-registration.service';
 import { CreateLandDto } from './dto/create-land.dto';
+import { CreateLandGeoJsonDto } from './dto/create-land-geojson.dto';
 import { UpdateLandDto } from './dto/update-land.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { UserRole } from 'src/common/enums/user-role.enum';
+import { Response } from 'express';
 
 @ApiTags('land-registration')
 @Controller('land-registration')
@@ -22,6 +24,18 @@ export class LandRegistrationController {
       ...createLandDto,
       ownerId: req.user.id,
     });
+  }
+
+  @Post('geojson')
+  @ApiOperation({ summary: 'Register a new land using GeoJSON polygon' })
+  @ApiResponse({ status: 201, description: 'The land has been successfully registered from GeoJSON.' })
+  createWithGeoJson(@Body() createLandDto: CreateLandGeoJsonDto, @Req() req: any) {
+
+    const landData = {
+      ...createLandDto,
+      ownerId: req.user.id,
+    };
+    return this.landRegistrationService.createWithGeoJson(landData, req.user.id);
   }
 
   @Get()
@@ -80,5 +94,49 @@ export class LandRegistrationController {
   @ApiResponse({ status: 200, description: 'The land has been successfully verified.' })
   verify(@Param('id') id: string, @Req() req: any) {
     return this.landRegistrationService.verify(id, req.user.id);
+  }
+
+  @Get(':id/certificate')
+  @Roles(UserRole.CITIZEN, UserRole.LAND_OFFICER, UserRole.ADMIN)
+  @ApiOperation({ summary: 'Generate and download land certificate PDF' })
+  @ApiResponse({ status: 200, description: 'Land certificate PDF generated successfully.' })
+  async generateCertificate(@Param('id') id: string, @Req() req: any, @Res() res: Response) {
+    try {
+      const pdfBuffer = await this.landRegistrationService.generateLandCertificate(id, req.user.id);
+      
+      res.set({
+        'Content-Type': 'application/pdf',
+        'Content-Disposition': `attachment; filename="land-certificate-${id}.pdf"`,
+        'Content-Length': pdfBuffer.length,
+      });
+      
+      res.status(HttpStatus.OK).send(pdfBuffer);
+    } catch (error) {
+      res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+        message: 'Failed to generate certificate',
+        error: error.message,
+      });
+    }
+  }
+
+  @Get(':id/certificate-html')
+  @Roles(UserRole.CITIZEN, UserRole.LAND_OFFICER, UserRole.ADMIN)
+  @ApiOperation({ summary: 'Generate land certificate as HTML (for debugging)' })
+  @ApiResponse({ status: 200, description: 'Land certificate HTML generated successfully.' })
+  async generateCertificateHtml(@Param('id') id: string, @Req() req: any, @Res() res: Response) {
+    try {
+      const html = await this.landRegistrationService.generateLandCertificateHtml(id, req.user.id);
+      
+      res.set({
+        'Content-Type': 'text/html',
+      });
+      
+      res.status(HttpStatus.OK).send(html);
+    } catch (error) {
+      res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+        message: 'Failed to generate HTML certificate',
+        error: error.message,
+      });
+    }
   }
 } 
