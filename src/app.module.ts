@@ -11,6 +11,9 @@ import { LandTaxesModule } from './modules/land-taxes/land-taxes.module';
 import { ConflictResolutionModule } from './modules/conflict-resolution/conflict-resolution.module';
 import { UrbanizationModule } from './modules/urbanization/urbanization.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
+import { AuditLogsModule } from './modules/audit-logs/audit-logs.module';
+import { DocumentGenerationModule } from './modules/document-generation/document-generation.module';
+import { ReportsModule } from './modules/reports/reports.module';
 
 @Module({
   imports: [
@@ -50,6 +53,9 @@ import { NotificationsModule } from './modules/notifications/notifications.modul
     ConflictResolutionModule,
     UrbanizationModule,
     NotificationsModule,
+    AuditLogsModule,
+    DocumentGenerationModule,
+    ReportsModule,
 
   ],
 })
