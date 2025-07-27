@@ -47,6 +47,9 @@ export enum NotificationType {
   TAX_ASSESSED = 'TAX_ASSESSED',
   TAX_PAID = 'TAX_PAID',
   TAX_OVERDUE = 'TAX_OVERDUE',
+
+  // Document Generation
+  DOCUMENT_GENERATED = 'DOCUMENT_GENERATED',
 }
 
 @Injectable()
