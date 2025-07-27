@@ -323,7 +323,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"firstName\": \"Admin\",\n    \"lastName\": \"User\",\n    \"email\": \"admin@example.com\",\n    \"password\": \"admin123\",\n    \"phoneNumber\": \"+1234567890\",\n    \"address\": \"123 Test Street\",\n    \"role\": \"admin\"\n}",
+							"raw": "{\n    \"firstName\": \"Admin\",\n    \"lastName\": \"User\",\n    \"email\": \"admin@example.com\",\n    \"password\": \"admin123\",\n    \"phoneNumber\": \"+1234567890\",\n    \"nationalId\": \"1198570123456782\",\n    \"address\": \"123 Test Street\",\n    \"role\": \"admin\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -355,7 +355,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"firstName\": \"Land\",\n    \"lastName\": \"Officer\",\n    \"email\": \"land.officer@example.com\",\n    \"password\": \"land123\",\n    \"phoneNumber\": \"+1234567890\",\n    \"address\": \"123 Test Street\",\n    \"role\": \"land_officer\"\n}",
+							"raw": "{\n    \"firstName\": \"Land\",\n    \"lastName\": \"Officer\",\n    \"email\": \"land.officer@example.com\",\n    \"password\": \"land123\",\n    \"phoneNumber\": \"+1234567890\",\n    \"nationalId\": \"1198470123456782\",\n    \"address\": \"123 Test Street\",\n    \"role\": \"land_officer\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -387,7 +387,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"firstName\": \"Tax\",\n    \"lastName\": \"Officer\",\n    \"email\": \"tax.officer@example.com\",\n    \"password\": \"tax123\",\n    \"phoneNumber\": \"+1234567890\",\n    \"address\": \"123 Test Street\",\n    \"role\": \"land_officer\"\n}",
+							"raw": "{\n    \"firstName\": \"Tax\",\n    \"lastName\": \"Officer\",\n    \"email\": \"tax.officer@example.com\",\n    \"password\": \"tax123\",\n    \"phoneNumber\": \"+1234567890\",\n    \"nationalId\": \"1198670123456782\",\n    \"address\": \"123 Test Street\",\n    \"role\": \"land_officer\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -419,7 +419,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"firstName\": \"Construction\",\n    \"lastName\": \"Officer\",\n    \"email\": \"construction.officer@example.com\",\n    \"password\": \"construct123\",\n    \"phoneNumber\": \"+1234567890\",\n    \"address\": \"123 Test Street\",\n    \"role\": \"construction_officer\"\n}",
+							"raw": "{\n    \"firstName\": \"Construction\",\n    \"lastName\": \"Officer\",\n    \"email\": \"construction.officer@example.com\",\n    \"password\": \"construct123\",\n    \"phoneNumber\": \"+1234567890\",\n    \"nationalId\": \"1198870123456782\",\n    \"address\": \"123 Test Street\",\n    \"role\": \"construction_officer\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -451,7 +451,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"firstName\": \"Regular\",\n    \"lastName\": \"Citizen\",\n    \"email\": \"citizen@example.com\",\n    \"password\": \"citizen123\",\n    \"phoneNumber\": \"+1234567890\",\n    \"address\": \"123 Test Street\",\n    \"role\":\"citizen\"\n}",
+							"raw": "{\n    \"firstName\": \"Regular\",\n    \"lastName\": \"Citizen\",\n    \"email\": \"citizen@example.com\",\n    \"password\": \"citizen123\",\n    \"phoneNumber\": \"+1234567890\",\n    \"nationalId\": \"1198370123456782\",\n    \"address\": \"123 Test Street\",\n    \"role\":\"citizen\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -582,14 +582,7 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"const response = pm.response.json();",
-									"console.log(\"Login Response:\", response); // Debug log",
-									"pm.environment.set(\"token\", response.token); // Set the token",
-									"pm.environment.set(\"user_id\", response.user._id); // Set the user ID",
-									"pm.test(\"Login successful\", function () {",
-									"    pm.response.to.have.status(200);",
-									"    pm.expect(response.message).to.equal(\"Login successful\");",
-									"});"
+									""
 								],
 								"type": "text/javascript",
 								"packages": {}
@@ -606,7 +599,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"ownerId\":\"{{citizen_id}}\",\n  \"plotNumber\": \"PLOT-GIS-01\",\n  \"latitude\": -1.9445,\n  \"longitude\": 30.0621,\n  \"address\": \"Kigali, Rwanda\",\n  \"area\": 450.75,\n  \"title\": \"Demo GIS Land\",\n  \"description\": \"Land for GIS testing\",\n  \"value\": 15000\n}\n",
+							"raw": "{\n    \"plotNumber\": \"KGL-001-2024\",\n    \"title\": \"Test Polygon Land\",\n    \"address\": \"Kigali, Rwanda\",\n    \"description\": \"Testing GeoJSON polygon registration\",\n    \"value\": 500000,\n    \"geoJson\": {\n        \"type\": \"Feature\",\n        \"properties\": {\n            \"name\": \"Test Parcel\"\n        },\n        \"geometry\": {\n            \"type\": \"Polygon\",\n            \"coordinates\": [[\n                [30.0583, -1.9441],\n                [30.0584, -1.9441],\n                [30.0584, -1.9442],\n                [30.0583, -1.9442],\n                [30.0583, -1.9441]\n            ]]\n        }\n    }\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -614,12 +607,13 @@
 							}
 						},
 						"url": {
-							"raw": "{{base_url}}/land-registration",
+							"raw": "{{base_url}}/land-registration/geojson",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"land-registration"
+								"land-registration",
+								"geojson"
 							]
 						}
 					},
@@ -807,6 +801,82 @@
 									"key": "radius",
 									"value": "1000"
 								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get land certificate HTML",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{current_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/land-registration/7367ed5a-d164-4037-9430-b1b3a377b26e/certificate-html",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"land-registration",
+								"7367ed5a-d164-4037-9430-b1b3a377b26e",
+								"certificate-html"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Audit logs",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{current_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/audit-logs/entity/Land/c7e615de-8008-42ea-91aa-a13c2ade56a5",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"audit-logs",
+								"entity",
+								"Land",
+								"c7e615de-8008-42ea-91aa-a13c2ade56a5"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get land certificate PDF",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{current_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/land-registration/7367ed5a-d164-4037-9430-b1b3a377b26e/certificate",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"land-registration",
+								"7367ed5a-d164-4037-9430-b1b3a377b26e",
+								"certificate"
 							]
 						}
 					},
