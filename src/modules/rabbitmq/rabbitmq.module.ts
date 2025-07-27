@@ -1,8 +1,9 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { RabbitMQService } from './rabbitmq.service';
 import { EventListenerService } from './event-listener.service';
 import { NotificationsModule } from '../notifications/notifications.module';
+import { AuditLogsModule } from '../audit-logs/audit-logs.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { NotificationsModule } from '../notifications/notifications.module';
       },
     ]),
     NotificationsModule,
+    forwardRef(() => AuditLogsModule),
   ],
   providers: [RabbitMQService, EventListenerService],
   exports: [RabbitMQService],

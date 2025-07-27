@@ -8,6 +8,9 @@ export enum RabbitMQEvents {
   LAND_UPDATED = 'land.updated',
   USER_NOTIFICATION = 'user.notification',
   STATUS_UPDATE = 'status.update',
+  GEOJSON_PROCESSED = 'geojson.processed',
+  DOCUMENT_GENERATION_REQUESTED = 'document.generation.requested',
+  AUDIT_LOG_CREATED = 'audit.log.created',
 }
 
 @Injectable()
@@ -59,5 +62,29 @@ export class RabbitMQService {
 
   async handleStatusUpdate(data: any) {
     await this.emit(RabbitMQEvents.STATUS_UPDATE, data);
+  }
+
+  async handleGeoJsonProcessed(landId: string, geoJsonData: any, processedData: any) {
+    await this.emit(RabbitMQEvents.GEOJSON_PROCESSED, {
+      landId,
+      geoJsonData,
+      processedData,
+    });
+  }
+
+  async handleDocumentGenerationRequest(landId: string, documentType: string, userId: string) {
+    await this.emit(RabbitMQEvents.DOCUMENT_GENERATION_REQUESTED, {
+      landId,
+      documentType,
+      userId,
+      requestedAt: new Date(),
+    });
+  }
+
+  async handleAuditLogCreated(auditLogId: string, data: any) {
+    await this.emit(RabbitMQEvents.AUDIT_LOG_CREATED, {
+      auditLogId,
+      ...data,
+    });
   }
 } 
