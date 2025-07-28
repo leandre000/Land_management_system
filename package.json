@@ -21,6 +21,7 @@
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "dependencies": {
+    "@nestjs/axios": "^4.0.1",
     "@nestjs/cache-manager": "^3.0.1",
     "@nestjs/common": "^11.0.1",
     "@nestjs/config": "^4.0.2",
@@ -36,8 +37,11 @@
     "@nestjs/typeorm": "^11.0.0",
     "@nestjs/websockets": "^11.1.5",
     "@turf/turf": "^7.2.0",
+    "@types/minio": "^7.1.1",
+    "@types/uuid": "^10.0.0",
     "amqp-connection-manager": "^4.1.14",
     "amqplib": "^0.10.8",
+    "aws-sdk": "^2.1692.0",
     "bcrypt": "^6.0.0",
     "cache-manager": "^7.0.1",
     "cache-manager-redis-store": "^3.0.1",
@@ -45,6 +49,9 @@
     "class-validator": "^0.14.2",
     "geojson": "^0.5.0",
     "handlebars": "^4.7.8",
+    "minio": "^8.0.5",
+    "multer": "^2.0.2",
+    "multer-s3": "^3.0.1",
     "nest-commander": "^3.18.0",
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
@@ -55,6 +62,7 @@
     "rxjs": "^7.8.1",
     "turf": "^3.0.14",
     "typeorm": "^0.3.25",
+    "uuid": "^11.1.0",
     "wellknown": "^0.5.0"
   },
   "devDependencies": {
@@ -69,6 +77,7 @@
     "@types/geojson": "^7946.0.16",
     "@types/handlebars": "^4.0.40",
     "@types/jest": "^29.5.14",
+    "@types/multer": "^2.0.0",
     "@types/node": "^22.10.7",
     "@types/supertest": "^6.0.2",
     "@types/wellknown": "^0.5.8",
