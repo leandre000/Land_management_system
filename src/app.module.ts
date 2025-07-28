@@ -14,6 +14,7 @@ import { NotificationsModule } from './modules/notifications/notifications.modul
 import { AuditLogsModule } from './modules/audit-logs/audit-logs.module';
 import { DocumentGenerationModule } from './modules/document-generation/document-generation.module';
 import { ReportsModule } from './modules/reports/reports.module';
+import { MinioModule } from './modules/minio/minio.module';
 
 @Module({
   imports: [
@@ -56,7 +57,7 @@ import { ReportsModule } from './modules/reports/reports.module';
     AuditLogsModule,
     DocumentGenerationModule,
     ReportsModule,
-
+    MinioModule
   ],
 })
 export class AppModule {}
