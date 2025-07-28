@@ -1,16 +1,21 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Request } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Request, UseInterceptors, UploadedFile } from '@nestjs/common';
 import { ConflictResolutionService } from './conflict-resolution.service';
 import { CreateDisputeDto } from './dto/create-dispute.dto';
 import { UpdateDisputeDto } from './dto/update-dispute.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { DisputeStatus } from './entities/land-dispute.entity';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { MinioService } from 'src/modules/minio/minio.service';
 
 @ApiTags('Conflict Resolution')
 @Controller('conflict-resolution')
 @UseGuards(JwtAuthGuard)
 export class ConflictResolutionController {
-  constructor(private readonly conflictResolutionService: ConflictResolutionService) {}
+  constructor(
+    private readonly conflictResolutionService: ConflictResolutionService,
+    private readonly minioService: MinioService
+  ) {}
 
   @Post()
   @ApiOperation({ summary: 'Create a new land dispute' })
@@ -84,5 +89,17 @@ export class ConflictResolutionController {
     @Body('report') report: string,
   ) {
     return this.conflictResolutionService.recordFieldVisit(id, report);
+  }
+
+    @Post('upload-evidence')
+  @UseInterceptors(FileInterceptor('file'))
+  async uploadEvidence(@UploadedFile() file: Express.Multer.File, @Body('disputeId') disputeId: string) {
+    const result = await this.minioService.uploadFile(
+      'evidence',
+      `${disputeId}/${file.originalname}`,
+      file.buffer,
+      file.mimetype,
+    );
+    return { url: result.Location };
   }
 } 
